@@ -11,7 +11,7 @@
 Quad sun;
 Quad earth;
 Quad moon;
-float speed = 20;
+float speed = 50;
 float speedIncrement = speed/10;
 
 void Init() {
@@ -47,10 +47,11 @@ glm::mat4 T (float x, float y) {
     return glm::mat4(T);
 }
 
-glm::mat4 E(float a, float b, float r) {
-    glm::mat4 rot = R(r);
-    rot[3][0] = -a;
-    rot[3][1] = -b;
+glm::mat4 E(float a, float b, float angle) {
+    // rotation and variable translation
+    glm::mat4 rot = R(angle);
+    rot[3][0] =  -a*cos(angle);
+    rot[3][1] =  -b*sin(angle);
     return glm::mat4(rot);
 }
 
@@ -64,7 +65,7 @@ void Display() {
     float revolutionSpeed = time_s/365;
 
     // compute the transformation matrices
-    glm::mat4 revolution = T(0.5,0) * E(0.5, 0, revolutionSpeed) * T(0.8, 0);
+    glm::mat4 revolution = T(0.5,0) * E(0, 0.3, revolutionSpeed) * T(0.8, 0);
     sun.Draw(T(0.35,0) * R(sunSpeed) * S(0.2));
     earth.Draw(revolution * R(earthSpeed) * S(0.08));
     moon.Draw(revolution * R(moonSpeed) * T(0.2, 0) /** R(-moonSpeed)*/ * S(0.03));

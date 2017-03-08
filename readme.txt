@@ -42,3 +42,6 @@ followed by a rotation matrix.
 The speed is adapted such that time_s represent a day, the moon revolves
 around the earth in 27.3 days, the earth and the moon revolve around the
 sun in 356 days and the sun rotates on itself in 38 days.
+
+The left and right arrow key can be used to change the speed of the simulation.
+Pressing the key will call KeyCallback which will update the speed value.
