@@ -1,2 +1,5 @@
-/build/**/
-/lab/**/
+/build*/
+/lab*/
+/lab1_helloworld.jpg
+/CMakeFiles/
+/CMakeLists.txt.user
