@@ -8,7 +8,7 @@ uniform mat4 MVP;
 uniform float time;
 
 void main() {
-#if
+#if 0
     uv = (position + vec2(1.0, 1.0)) * 0.5;
 
     // convert the 2D position into 3D positions that all lay in a horizontal
