@@ -65,7 +65,7 @@ void Display() {
     float revolutionSpeed = time_s/365;
 
     // compute the transformation matrices
-    glm::mat4 revolution = T(0.5,0) * E(0, 0.3, revolutionSpeed) * T(0.8, 0);
+    glm::mat4 revolution = E(0, 0.3, revolutionSpeed) * T(0.8, 0);
     sun.Draw(T(0.35,0) * R(sunSpeed) * S(0.2));
     earth.Draw(revolution * R(earthSpeed) * S(0.08));
     moon.Draw(revolution * R(moonSpeed) * T(0.2, 0) /** R(-moonSpeed)*/ * S(0.03));
