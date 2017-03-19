@@ -31,10 +31,10 @@ void main() {
     // Complete the shader to obtain spot light effect
     //<<<<<<<<<< TODO <<<<<<<<<<<
 
-    float angle = dot(light_dir, spot_dir);
-    vec3 spotEffect = vec3(1.0);
-    if(angle < spot_cos_cutoff) {
-        spotEffect = vec3(1.0)*pow(angle, spot_exp);
+    float angle = dot(normalize(light_dir), normalize(spot_dir));
+    vec3 spotEffect = vec3(0.0, 0.0, 0.0);
+    if(angle > spot_cos_cutoff) {
+        spotEffect = vec3(pow(angle, spot_exp));
     }
 
     vec3 ambient = ka * La;
@@ -45,6 +45,6 @@ void main() {
     vec3 reflectn = normalize(reflect(-light_dir, normal_mv));
     vec3 rv = vec3(pow(clamp(dot(reflectn, view_dir), 0, 1), alpha));
     vec3 specular = ks * rv * Ls;
-    //color =  cross(ambient + diffuse + specular, spotEffect);
+    color =  (ambient + diffuse + specular) * spotEffect;
 
 }
