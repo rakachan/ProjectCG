@@ -18,16 +18,8 @@ sampler tex to define the color of the shader.
 
 ### 3.3 artistic Shading
 
-In this part of the homework your goal is to use a 2D texture to shade the object in an
-artistic fashion (see Figure 5). As in Toon shading, artistic shading uses a texture with the
-difference that now this texture is in 2D (see Figure 6).
-Figure 5: Artistic Shading
-Read http://maverick.inria.fr/Publications/2006/BTM06a/x-toon.pdf for more informations
-on artistic shading.
-First, complete TODO 3.1 in mesh.h/bindShader() by binding texture 2d id (0.25
-point). Then complete TODO 3.2 in art fshader.glsl (0.75 point). You can use the
-same vertex shader as in Phong Shading (phong vshader.glsl).
-Figure 6: A 2D texture with the artistic shading mapping
+In this part, we do not use the Phong reflection model, but use a 2D "gradient" parametered by the dot product
+between the the normal of the position and the lighting position, and the reflection of the lighting and the eye. 
 
 
 ### 3.4 Flat Shading
