@@ -48,7 +48,6 @@ class FrameBuffer {
             glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
             const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
             glDrawBuffers(1, buffers);
-
         }
 
         void postSwap() {
