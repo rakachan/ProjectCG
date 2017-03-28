@@ -56,7 +56,7 @@ void main() {
     for(int i = 0; i < width_kernel; ++i) {
         float weight = one_kernel[i];
         if (vertical == 0) {
-            tot_image += weight * texture(tex, uv + vec2((i - width_kernel/2.0)/(0f+tex_width), 0.0f)).rgb;
+            tot_image += weight * texture(tex, uv + vec2((i - width_kernel/2.0)/(0.0f+tex_width), 0.0f)).rgb;
         } else {
             tot_image += weight * texture(tex, uv + vec2(0.0f, (i - width_kernel/2.0)/(0f+tex_height))).rgb;
         }
