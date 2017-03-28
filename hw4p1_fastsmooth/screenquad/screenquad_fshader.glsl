@@ -58,7 +58,7 @@ void main() {
         if (vertical == 0) {
             tot_image += weight * texture(tex, uv + vec2((i - width_kernel/2.0)/(0.0f+tex_width), 0.0f)).rgb;
         } else {
-            tot_image += weight * texture(tex, uv + vec2(0.0f, (i - width_kernel/2.0)/(0f+tex_height))).rgb;
+            tot_image += weight * texture(tex, uv + vec2(0.0f, (i - width_kernel/2.0)/(0.0f+tex_height))).rgb;
         }
         tot_weight += weight;
     }
