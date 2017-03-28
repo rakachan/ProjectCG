@@ -162,14 +162,14 @@ class ScreenQuad {
             }
             for(int i = 0; i < size; ++i) {
                 float x = i - size/2.0;
-                a[i] = exp(-(x*x)/(2.0*std*std*std*std)); //1.0/(2.0*6.28*std*std) *
+                a[i] = exp(-(x*x)/(2.0f*std*std)); //1.0/(2.0*6.28*std*std) *
             }
         }
 
         void changeStd(float inc) {
             std_ += inc;
-            if(std_ < 0.0) {
-                std_ = 0.0;
+            if(std_ < 1.0) {
+                std_ = 1.0;
             }
         }
 };

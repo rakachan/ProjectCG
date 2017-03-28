@@ -42,6 +42,7 @@ void Init(GLFWwindow* window) {
     vec3 cam_look(0.0f, 0.0f, 0.0f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
     view_matrix = lookAt(cam_pos, cam_look, cam_up);
+
     float ratio = window_width / (float) window_height;
     projection_matrix = perspective(45.0f, ratio, 0.1f, 10.0f);
 
@@ -53,12 +54,15 @@ void Init(GLFWwindow* window) {
     // TODO: initialize framebuffer (see slides)
     // TODO: initialize fullscreen quad (see slides)
     glfwGetFramebufferSize(window, &window_width, &window_height);
+    framebuffer.Cleanup();
     GLuint framebuffer_texture_id;
     GLuint framebuffer_tmp_texture_id;
     std::tie(framebuffer_texture_id, framebuffer_tmp_texture_id) =
             framebuffer.Init(window_width, window_height);
     screenquad.Init(window_width, window_height,
                     framebuffer_texture_id, framebuffer_tmp_texture_id);
+    framebuffer.Cleanup();
+    framebuffer.Init(window_width, window_height);
 }
 
 void Display() {
