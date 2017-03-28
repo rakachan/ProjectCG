@@ -10,22 +10,58 @@ class FrameBuffer {
         GLuint depth_render_buffer_id_;
         GLuint color_texture_id_;
         GLuint tmp_texture_id_;
-        GLuint tmp2_texture_id_;
+        GLuint process_buffer_;
 
     public:
         // warning: overrides viewport!!
         void Bind() {
             glViewport(0, 0, width_, height_);
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
-            const GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-            glDrawBuffers(3 /*length of buffers[]*/, buffers);
+
+            const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+            glDrawBuffers(1, buffers);
+
+        }
+
+        void preswap() {
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                   GL_COLOR_ATTACHMENT0 /*location = 0*/,
+                                   GL_TEXTURE_2D, tmp_texture_id_,
+                                   0 /*level*/);
+
+            glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
+            /*
+            const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+            glDrawBuffers(1, buffers);
+            */
+
+        }
+
+        void swap() {
+            glDisable(GL_DEPTH_TEST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                   GL_COLOR_ATTACHMENT0 /*location = 0*/,
+                                   GL_TEXTURE_2D, color_texture_id_,
+                                   0 /*level*/);
+
+            glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
+            const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+            glDrawBuffers(1, buffers);
+
+        }
+
+        void postSwap() {
+            glBindFramebuffer(GL_FRAMEBUFFER , 0);
+            glUseProgram (0);
+            glEnable(GL_DEPTH_TEST);
         }
 
         void Unbind() {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        std::tuple<int, int, int> Init(int image_width, int image_height, bool use_interpolation = false) {
+        std::tuple<int, int> Init(int image_width, int image_height, bool use_interpolation = false) {
             this->width_ = image_width;
             this->height_ = image_height;
 
@@ -69,28 +105,7 @@ class FrameBuffer {
                 // create texture for the color attachment
                 // see Table.2 on
                 // khronos.org/opengles/sdk/docs/man3/docbook4/xhtml/glTexImage2D.xml
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0,
-                             GL_RGB, GL_UNSIGNED_BYTE, NULL);
-                // how to load from buffer
-            }
-            {
-                glGenTextures(1, &tmp2_texture_id_);
-                glBindTexture(GL_TEXTURE_2D, tmp2_texture_id_);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-                if(use_interpolation){
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                } else {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                }
-
-                // create texture for the color attachment
-                // see Table.2 on
-                // khronos.org/opengles/sdk/docs/man3/docbook4/xhtml/glTexImage2D.xml
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0,
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width_, height_, 0,
                              GL_RGB, GL_UNSIGNED_BYTE, NULL);
                 // how to load from buffer
             }
@@ -106,19 +121,11 @@ class FrameBuffer {
             // tie it all together
             {
                 glGenFramebuffers(1, &framebuffer_object_id_);
+                glGenFramebuffers(1, &process_buffer_);
                 glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
                 glFramebufferTexture2D(GL_FRAMEBUFFER,
                                        GL_COLOR_ATTACHMENT0 /*location = 0*/,
                                        GL_TEXTURE_2D, color_texture_id_,
-                                       0 /*level*/);
-
-                glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                       GL_COLOR_ATTACHMENT1 /*location = 1*/,
-                                       GL_TEXTURE_2D, tmp_texture_id_,
-                                       0 /*level*/);
-                glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                       GL_COLOR_ATTACHMENT2 /*location = 2*/,
-                                       GL_TEXTURE_2D, tmp2_texture_id_,
                                        0 /*level*/);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                           GL_RENDERBUFFER, depth_render_buffer_id_);
@@ -130,30 +137,26 @@ class FrameBuffer {
                 glBindFramebuffer(GL_FRAMEBUFFER, 0); // avoid pollution
             }
 
-            return std::make_tuple(color_texture_id_, tmp_texture_id_, tmp2_texture_id_);
+            return std::make_tuple(color_texture_id_, tmp_texture_id_);
         }
+
+
 
         void Clear() {
             glViewport(0, 0, width_, height_);
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object_id_);
                 glDrawBuffer(GL_COLOR_ATTACHMENT0);
                 glClearColor(1.0, 1.0, 1.0, 1.0);
-                //glClear(GL_COLOR_BUFFER_BIT);
-                glDrawBuffer(GL_COLOR_ATTACHMENT1);
-                glClearColor(0.0, 0.0, 0.0, 1.0);
-                //glClear(GL_COLOR_BUFFER_BIT);
-                glDrawBuffer(GL_COLOR_ATTACHMENT2);
-                glClearColor(0.0, 0.0, 0.0, 1.0);
-                //glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
+                glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
         void Cleanup() {
             glDeleteTextures(1, &color_texture_id_);
             glDeleteTextures(1, &tmp_texture_id_);
-            glDeleteTextures(1, &tmp2_texture_id_);
             glDeleteRenderbuffers(1, &depth_render_buffer_id_);
             glBindFramebuffer(GL_FRAMEBUFFER, 0 /*UNBIND*/);
             glDeleteFramebuffers(1, &framebuffer_object_id_);
+            glDeleteFramebuffers(1, &process_buffer_);
         }
 };

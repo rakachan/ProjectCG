@@ -10,7 +10,6 @@ class ScreenQuad {
         GLuint vertex_buffer_object_;   // memory buffer
         GLuint texture_id_;             // texture ID
         GLuint tmp_texture_id_;
-        GLuint tmp2_texture_id_;
 
         float screenquad_width_;
         float screenquad_height_;
@@ -18,7 +17,7 @@ class ScreenQuad {
 
     public:
         void Init(float screenquad_width, float screenquad_height,
-                  GLuint texture, GLuint tmp, GLuint tmp2) {
+                  GLuint texture, GLuint tmp) {
 
             // set screenquad size
             this->screenquad_width_ = screenquad_width;
@@ -28,7 +27,7 @@ class ScreenQuad {
             program_id_ = icg_helper::LoadShaders("screenquad_vshader.glsl",
                                                   "screenquad_fshader.glsl");
             // init std to default value
-            std_ = 2.0;
+            std_ = 3.0;
 
             if(!program_id_) {
                 exit(EXIT_FAILURE);
@@ -97,13 +96,6 @@ class ScreenQuad {
             GLuint tmp_tex_id = glGetUniformLocation(program_id_, "tmp_tex");
             glUniform1i(tmp_tex_id, 1 /*GL_TEXTURE1*/);
 
-            this->tmp2_texture_id_ = tmp2;
-            glBindTexture(GL_TEXTURE_2D, tmp_texture_id_);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-            GLuint tmp2_tex_id = glGetUniformLocation(program_id_, "tmp2_tex");
-            glUniform1i(tmp2_tex_id, 2 /*GL_TEXTURE2*/);
-
             glBindTexture(GL_TEXTURE_2D, 0);
 
             // to avoid the current object being polluted
@@ -119,7 +111,6 @@ class ScreenQuad {
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteTextures(1, &texture_id_);
             glDeleteTextures(1, &tmp_texture_id_);
-            glDeleteTextures(1, &tmp2_texture_id_);
         }
 
         void UpdateSize(int screenquad_width, int screenquad_height) {
@@ -127,7 +118,7 @@ class ScreenQuad {
             this->screenquad_height_ = screenquad_height;
         }
 
-        void Draw() {
+        void Draw(int tex) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
@@ -138,22 +129,23 @@ class ScreenQuad {
                         this->screenquad_height_);
 
             int size = 1 + 6 * int(ceil(std_));
-            const int MAX_SIZE = (int) this->screenquad_width_ * this->screenquad_height_;
-            glUniform1i(glGetUniformLocation(program_id_, "max_size"), MAX_SIZE);
+            const int MAX_SIZE = (int) min(this->screenquad_width_,this->screenquad_height_);
             glUniform1i(glGetUniformLocation(program_id_, "width_kernel"), size);
             float* kernel = new float[MAX_SIZE];
             compute_1D_kernel(kernel, size, std_);
             glUniform1fv(glGetUniformLocation(program_id_, "one_kernel"), MAX_SIZE, kernel);
 
             // bind texture
+            GLuint texid;
+            if(tex == 0) {
+                texid = texture_id_;
+            } else {
+                texid = tmp_texture_id_;
+            }
+            glUniform1i(glGetUniformLocation(program_id_,
+            "vertical"), 1-tex);
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture_id_);
-
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, tmp_texture_id_);
-
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, tmp2_texture_id_);
+            glBindTexture(GL_TEXTURE_2D, texid);
 
             // draw
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -168,10 +160,9 @@ class ScreenQuad {
             if(size > cap_size) {
                 size = cap_size;
             }
-            for(int i = 0; i < size * size; ++i) {
-                int x = (i / size) - size/2;
-                int y = (i % size) - size/2;
-                a[i] = exp(-(x*x+y*y)/(2.0*std*std*std*std)); //1.0/(2.0*6.28*std*std) *
+            for(int i = 0; i < size; ++i) {
+                float x = i - size/2.0;
+                a[i] = exp(-(x*x)/(2.0*std*std*std*std)); //1.0/(2.0*6.28*std*std) *
             }
         }
 

@@ -55,27 +55,29 @@ void Init(GLFWwindow* window) {
     glfwGetFramebufferSize(window, &window_width, &window_height);
     GLuint framebuffer_texture_id;
     GLuint framebuffer_tmp_texture_id;
-    GLuint framebuffer_tmp2_texture_id;
-    std::tie(framebuffer_texture_id, framebuffer_tmp_texture_id, framebuffer_tmp2_texture_id) =
-            framebuffer.Init(window_width, window_height, true);
+    std::tie(framebuffer_texture_id, framebuffer_tmp_texture_id) =
+            framebuffer.Init(window_width, window_height);
     screenquad.Init(window_width, window_height,
-                    framebuffer_texture_id, framebuffer_tmp_texture_id, framebuffer_tmp2_texture_id);
+                    framebuffer_texture_id, framebuffer_tmp_texture_id);
 }
 
 void Display() {
     // TODO: wrap these calls so they render to a texture (see slides)
     framebuffer.Clear();
-    framebuffer.Bind();
+    framebuffer.preswap();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         cube.Draw(cube_model_matrix, view_matrix, projection_matrix);
         quad.Draw(IDENTITY_MATRIX, view_matrix, projection_matrix);
-    framebuffer.Unbind();
-    
+    framebuffer.swap();
+        screenquad.Draw(1);
+    framebuffer.postSwap();
+    //glViewport(0, 0, window_width, window_height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    screenquad.Draw(0);
+
     // TODO: use the fullscreen quad to draw the framebuffer texture to screen
     //       (see slides)
-    glViewport(0, 0, window_width, window_height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    screenquad.Draw();
+
 }
 
 // gets called when the windows/framebuffer is resized.
