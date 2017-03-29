@@ -1,4 +1,7 @@
 ### 3.1 Fast Gaussian Blur
+We first create the 1D kernel and pass it as uniform. Then in framebuffer.h, create a second texture.
+When drawing, first draw the cube and quad in the framebuffer, then swap to the second texture in the same COLOR_ATTACHMENT, then draw the screenquad by telling it to blur vertically and taking the first texture as input.
+Finally draw again the screen quad, but outside the framebuffer and telling it to blur horizontally and taking the second texture as input.
 
 ### 3.2 Screen Space Reflections
 
