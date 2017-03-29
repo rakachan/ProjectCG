@@ -5,20 +5,17 @@ uniform sampler2D velocityTex;
 out vec4 color;
 
 void main() {
-    int num_samples = 200;
-    float scale = 600;
-    vec2 velocity = clamp(texture(velocityTex, uv).xy * scale, 0, 1);
-    //velocity = vec2(0.01,0.0);
+    int num_samples = 27;
+    float scale = 1;
+    vec2 velocity = texture(velocityTex, uv).xy * scale/float(num_samples);
     vec3 Color = vec3(0,0,0);
 
     for(int i = 0 ;i < num_samples ; ++i){
-        Color += clamp(texture(colorTex, uv + (velocity*i/float(num_samples))).rgb, 0, 1);
+        Color += clamp(texture(colorTex, uv - (velocity*i)).rgb, 0, 1);
     }
 
     Color /= float(num_samples);
     color = vec4(Color,1);
-    //velocity = vec2(0.001,0);
-    //velocity = vec2(0.001,0.001);
     /// TODO: use the velocity vector stored in velocityTex to compute the line integral
     /// TODO: use a constant number of samples for integral (what happens if you take too few?)
     /// HINT: you can scale the velocity vector to make the motion blur effect more prominent
