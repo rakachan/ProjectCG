@@ -6,7 +6,7 @@ out vec4 color;
 
 void main() {
     int num_samples = 27;
-    float scale = 1;
+    float scale = 1.0f;
     vec2 velocity = texture(velocityTex, uv).xy * scale/float(num_samples);
     vec3 Color = vec3(0,0,0);
 
