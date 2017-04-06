@@ -27,7 +27,7 @@ struct Light {
         }
 };
 
-class Grid {
+class Grid: public Light {
 
     private:
         GLuint vertex_array_id_;                // vertex array object
@@ -115,9 +115,10 @@ class Grid {
 
             {
                 const int ColormapSize=3;
-                GLfloat tex[3*ColormapSize] = {/*white*/    150/255.0f, 141/255.0f, 153/255.0f,
+                GLfloat tex[3*ColormapSize] = {
+                                               /*green*/    48.0f/255.0f, 186.0f/256.0f, 143.0f/255.0f,
                                                /*yellow*/   186/255.0f, 142/255.0f, 47/255.0f,
-                                               /*green*/    48.0f/255.0f, 186.0f/256.0f, 143.0f/255.0f};
+                                               /*white*/    150/255.0f, 141/255.0f, 153/255.0f};
                 glGenTextures(1, &colormap_);
                 glBindTexture(GL_TEXTURE_1D, colormap_);
                 glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
@@ -135,6 +136,8 @@ class Grid {
             // to avoid the current object being polluted
             glBindVertexArray(0);
             glUseProgram(0);
+
+            Light::Setup(program_id_);
         }
 
         void Cleanup() {
