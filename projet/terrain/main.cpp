@@ -6,26 +6,35 @@
 #include "icg_helper.h"
 
 #include "framebuffer.h"
+#include "trackball.h"
 
 #include "floor/floor.h"
 #include "cube/cube.h"
 #include "grid/grid.h"
 #include "screenquad/screenquad.h"
+#include "quad/quad.h"
+
 
 using namespace glm;
 
 int window_width = 1280;
 int window_height = 720;
 
+double y_anch;
+
 mat4 projection_matrix;
 mat4 view_matrix;
 mat4 view_proj;
+mat4 trackball_matrix;
+mat4 old_trackball_matrix;
 
 FrameBuffer framebuffer;
 Cube cube;
 Grid grid;
+Quad quad;
 ScreenQuad screenquad;
 
+Trackball trackball;
 
 using namespace glm;
 
@@ -34,13 +43,16 @@ void Init(GLFWwindow* window) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
 
-    grid.Init();
+    trackball_matrix = IDENTITY_MATRIX;
+
     glfwGetFramebufferSize(window, &window_width, &window_height);
 
     GLuint framebuffer_texture_id;
     framebuffer_texture_id = framebuffer.Init(window_width, window_height);
 
     screenquad.Init(window_width, window_height, framebuffer_texture_id);
+    grid.Init(framebuffer_texture_id);
+    quad.Init();
 
     vec3 cam_pos(2.0f, 2.0f, 2.0f);
     vec3 cam_look(0.0f, 0.0f, 0.0f);
@@ -58,11 +70,11 @@ void Display() {
 
     framebuffer.Clear();
     framebuffer.Bind();
-        grid.Draw(IDENTITY_MATRIX, view_matrix, projection_matrix);
+        quad.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
     framebuffer.Unbind();
     glViewport(0, 0, window_width, window_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    screenquad.Draw();
+    grid.Draw(trackball_matrix, view_matrix, projection_matrix);
 }
 
 // Gets called when the windows/framebuffer is resized.
@@ -86,6 +98,56 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
+// transforms glfw screen coordinates into normalized OpenGL coordinates.
+vec2 TransformScreenCoords(GLFWwindow* window, int x, int y) {
+    // the framebuffer and the window doesn't necessarily have the same size
+    // i.e. hidpi screens. so we need to get the correct one
+    int width;
+    int height;
+    glfwGetWindowSize(window, &width, &height);
+    return vec2(2.0f * (float)x / width - 1.0f,
+                1.0f - 2.0f * (float)y / height);
+}
+
+void MouseButton(GLFWwindow* window, int button, int action, int mod) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        double x_i, y_i;
+        glfwGetCursorPos(window, &x_i, &y_i);
+        vec2 p = TransformScreenCoords(window, x_i, y_i);
+        trackball.BeingDrag(p.x, p.y);
+        old_trackball_matrix = trackball_matrix;
+        // Store the current state of the model matrix.
+    }
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+        double x_i, y_i;
+        glfwGetCursorPos(window, &x_i, &y_i);
+        y_anch = y_i;
+    }
+}
+
+void MousePos(GLFWwindow* window, double x, double y) {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        vec2 p = TransformScreenCoords(window, x, y);
+        // TODO 3: Calculate 'trackball_matrix' given the return value of
+        // trackball.Drag(...) and the value stored in 'old_trackball_matrix'.
+        // See also the mouse_button(...) function.
+        // trackball_matrix = ...
+        trackball_matrix = trackball.Drag(p.x, p.y) * old_trackball_matrix;
+    }
+
+    // zoom
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+        // TODO 4: Implement zooming. When the right mouse button is pressed,
+        // moving the mouse cursor up and down (along the screen's y axis)
+        // should zoom out and it. For that you have to update the current
+        // 'view_matrix' with a translation along the z axis.
+        float c = (y-y_anch)/50.0f;
+        view_matrix = translate(view_matrix, vec3(c, c, 2.0f*c));
+        y_anch = y;
+    }
+}
+
+
 int main(int argc, char *argv[]) {
     /// GLFW Initialization
     if( !glfwInit() ){
@@ -94,6 +156,8 @@ int main(int argc, char *argv[]) {
     }
 
     glfwSetErrorCallback(ErrorCallback);
+
+
 
     /// Hint GLFW that we would like an OpenGL 3 context (at least)
     /// http://www.glfw.org/faq.html#how-do-i-create-an-opengl-30-context
@@ -117,6 +181,10 @@ int main(int argc, char *argv[]) {
     /// Set the callback for escape key
     glfwSetKeyCallback(window, KeyCallback);
 
+    /// set the mouse press and position callback
+    glfwSetMouseButtonCallback(window, MouseButton);
+    glfwSetCursorPosCallback(window, MousePos);
+
     glfwSetFramebufferSizeCallback(window, resize_callback);
 
     /// GLEW Initialization (must have a context)
@@ -139,8 +207,10 @@ int main(int argc, char *argv[]) {
 
     grid.Cleanup();
     screenquad.Cleanup();
+    quad.Cleanup();
     /// Close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);
     glfwTerminate();
     exit( EXIT_SUCCESS );
 }
+

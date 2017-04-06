@@ -2,6 +2,31 @@
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 
+struct Light {
+        glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
+
+        glm::vec3 light_pos = glm::vec3(0.0f, 0.0f, 2.0f);
+
+        // pass light properties to the shader
+        void Setup(GLuint program_id) {
+            glUseProgram(program_id);
+
+            // given in camera space
+            GLuint light_pos_id = glGetUniformLocation(program_id, "light_pos");
+
+            GLuint La_id = glGetUniformLocation(program_id, "La");
+            GLuint Ld_id = glGetUniformLocation(program_id, "Ld");
+            GLuint Ls_id = glGetUniformLocation(program_id, "Ls");
+
+            glUniform3fv(light_pos_id, ONE, glm::value_ptr(light_pos));
+            glUniform3fv(La_id, ONE, glm::value_ptr(La));
+            glUniform3fv(Ld_id, ONE, glm::value_ptr(Ld));
+            glUniform3fv(Ls_id, ONE, glm::value_ptr(Ls));
+        }
+};
+
 class Grid {
 
     private:
@@ -9,12 +34,16 @@ class Grid {
         GLuint vertex_buffer_object_position_;  // memory buffer for positions
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
         GLuint program_id_;                     // GLSL shader program ID
-        GLuint texture_id_;                     // texture ID
+        GLuint heightmap_;                     // texture ID
+        GLuint colormap_;                       // Colormap
         GLuint num_indices_;                    // number of vertices to render
-        GLuint MVP_id_;                         // model, view, proj matrix ID
+        GLuint M_id_;                         // model, view, proj matrix ID
+        GLuint V_id_;
+        GLuint P_id_;
+
 
     public:
-        void Init() {
+        void Init(GLuint tex) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("grid_vshader.glsl",
                                                   "grid_fshader.glsl");
@@ -79,43 +108,30 @@ class Grid {
 
             // load texture
             {
-                int width;
-                int height;
-                int nb_component;
-                string filename = "grid_texture.tga";
-                // set stb_image to have the same coordinates as OpenGL
-                stbi_set_flip_vertically_on_load(1);
-                unsigned char* image = stbi_load(filename.c_str(), &width,
-                                                 &height, &nb_component, 0);
-
-                if(image == nullptr) {
-                    throw(string("Failed to load texture"));
-                }
-
-                glGenTextures(1, &texture_id_);
-                glBindTexture(GL_TEXTURE_2D, texture_id_);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-                if(nb_component == 3) {
-                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
-                                 GL_RGB, GL_UNSIGNED_BYTE, image);
-                } else if(nb_component == 4) {
-                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-                                 GL_RGBA, GL_UNSIGNED_BYTE, image);
-                }
-
+                heightmap_ = tex;
                 GLuint tex_id = glGetUniformLocation(program_id_, "tex");
                 glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
-
-                // cleanup
-                glBindTexture(GL_TEXTURE_2D, 0);
-                stbi_image_free(image);
             }
 
+            {
+                const int ColormapSize=3;
+                GLfloat tex[3*ColormapSize] = {/*white*/    150/255.0f, 141/255.0f, 153/255.0f,
+                                               /*yellow*/   186/255.0f, 142/255.0f, 47/255.0f,
+                                               /*green*/    48.0f/255.0f, 186.0f/256.0f, 143.0f/255.0f};
+                glGenTextures(1, &colormap_);
+                glBindTexture(GL_TEXTURE_1D, colormap_);
+                glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, ColormapSize, 0, GL_RGB, GL_FLOAT, tex);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
+                glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
+                // check_error_gl();
+            }
             // other uniforms
-            MVP_id_ = glGetUniformLocation(program_id_, "MVP");
-
+            M_id_ = glGetUniformLocation(program_id_, "M");
+            V_id_ = glGetUniformLocation(program_id_, "V");
+            P_id_ = glGetUniformLocation(program_id_, "P");
             // to avoid the current object being polluted
             glBindVertexArray(0);
             glUseProgram(0);
@@ -128,7 +144,7 @@ class Grid {
             glDeleteBuffers(1, &vertex_buffer_object_index_);
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteProgram(program_id_);
-            glDeleteTextures(1, &texture_id_);
+            glDeleteTextures(1, &heightmap_);
         }
 
         void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
@@ -139,17 +155,18 @@ class Grid {
 
             // bind textures
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture_id_);
+            glBindTexture(GL_TEXTURE_2D, heightmap_);
 
             // setup MVP
-            glm::mat4 MVP = projection*view*model;
-            glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));
+            glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
+            glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
+            glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
             // draw
             // TODO 5: for debugging it can be helpful to draw only the wireframe.
             // You can do that by uncommenting the next line.
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            glDrawElements(GL_TRIANGLE_STRIP, num_indices_, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
 
             glBindVertexArray(0);
             glUseProgram(0);

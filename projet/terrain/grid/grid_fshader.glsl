@@ -1,71 +1,26 @@
 #version 330
 
 in vec2 uv;
+in vec3 light_dir;
+in vec3 view_dir;
+in vec4 vpoint_mv;
 
 out vec3 color;
 
+uniform sampler1D colormap;
 uniform sampler2D tex;
+uniform vec3 La, Ld, Ls;
+uniform vec3 ka, kd, ks;
 
-vec4 mod289(vec4 x)
-{
-  return x - floor(x * (1.0 / 289.0)) * 289.0;
-}
-
-vec4 permute(vec4 x)
-{
-  return mod289(((x*34.0)+1.0)*x);
-}
-
-vec2 fade(vec2 x){
-    return 6*x*x*x*x*x -15*x*x*x*x + 10*x*x*x;
-}
-
-vec4 taylorInvSqrt(vec4 r)
-{
-  return 1.79284291400159 - 0.85373472095314 * r;
-}
-
-
-float grid_dim = 10.0f;
 
 void main() {
+    vec3 normal_tr = normalize(cross(dFdx(vpoint_mv.xyz), dFdy(vpoint_mv.xyz)));
 
-    float grid_dim = 20.0f;
+    vec3 nl = vec3(clamp(dot(normal_tr, light_dir), 0, 1));
+    vec3 diffuse = kd * nl * Ld;
+    diffuse = vec3(0);
 
-    vec4 Pi = floor(vec4(uv.x, uv.y, uv.x, uv.y) * grid_dim) + vec4(0.0, 0.0, 1.0, 1.0) ;
-    vec4 Pf = fract(vec4(uv.x, uv.y, uv.x, uv.y) * grid_dim) - vec4(0.0, 0.0, 1.0, 1.0) ;
-    Pi = mod289(Pi); // To avoid truncation effects in permutation
-    vec4 ix = Pi.xzxz;
-    vec4 iy = Pi.yyww;
-    vec4 fx = Pf.xzxz;
-    vec4 fy = Pf.yyww;
+    float height = (texture(tex, uv).r + 1)/2.0f;
 
-    vec4 i = permute(permute(ix) + iy);
-
-    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
-    vec4 gy = abs(gx) - 0.5 ;
-    vec4 tx = floor(gx + 0.5);
-    gx = gx - tx;
-
-    vec2 g00 = vec2(gx.x,gy.x);
-    vec2 g10 = vec2(gx.y,gy.y);
-    vec2 g01 = vec2(gx.z,gy.z);
-    vec2 g11 = vec2(gx.w,gy.w);
-
-    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
-    g00 *= norm.x;
-    g01 *= norm.y;
-    g10 *= norm.z;
-    g11 *= norm.w;
-
-    float n00 = dot(g00, vec2(fx.x, fy.x));
-    float n10 = dot(g10, vec2(fx.y, fy.y));
-    float n01 = dot(g01, vec2(fx.z, fy.z));
-    float n11 = dot(g11, vec2(fx.w, fy.w));
-
-    vec2 fade_xy = fade(Pf.xy);
-    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
-    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
-    float c = 2.3 * n_xy;
-    color = vec3(c);
+    color = diffuse + texture(colormap, height).rgb;
 }
