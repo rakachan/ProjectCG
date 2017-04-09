@@ -73,7 +73,7 @@ void Display() {
         quad.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
     framebuffer.Unbind();
     glViewport(0, 0, window_width, window_height);
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    //glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     grid.Draw(trackball_matrix, view_matrix, projection_matrix);
 }
@@ -94,8 +94,31 @@ void ErrorCallback(int error, const char* description) {
 }
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GL_TRUE);
+    if (action == GLFW_PRESS) {
+        switch(key) {
+            case GLFW_KEY_ESCAPE :
+                glfwSetWindowShouldClose(window, GL_TRUE);
+            break;
+            case GLFW_KEY_Q :
+                quad.changeAmp(-0.05);
+            break;
+            case GLFW_KEY_W :
+                quad.changeAmp(0.05);
+            break;
+            case GLFW_KEY_A :
+                quad.changePers(-0.05);
+            break;
+            case GLFW_KEY_S :
+                quad.changePers(0.05);
+            break;
+            case GLFW_KEY_Z : //maps to Y key
+                quad.changeFreq(-1.0);
+            break;
+            case GLFW_KEY_X :
+                quad.changeFreq(1.0);
+            break;
+            default:break;
+        }
     }
 }
 

@@ -27,23 +27,47 @@ struct Light {
         }
 };
 
-class Grid: public Light {
+struct Material {
+        glm::vec3 ka = glm::vec3(0.18f, 0.1f, 0.1f);
+        glm::vec3 kd = glm::vec3(0.9f, 0.5f, 0.5f);
+        glm::vec3 ks = glm::vec3(0.8f, 0.8f, 0.8f);
+        float alpha = 60.0f;
+
+        // pass material properties to the shaders
+        void Setup(GLuint program_id) {
+            glUseProgram(program_id);
+
+            GLuint ka_id = glGetUniformLocation(program_id, "ka");
+            GLuint kd_id = glGetUniformLocation(program_id, "kd");
+            GLuint ks_id = glGetUniformLocation(program_id, "ks");
+            GLuint alpha_id = glGetUniformLocation(program_id, "alpha");
+
+            glUniform3fv(ka_id, ONE, glm::value_ptr(ka));
+            glUniform3fv(kd_id, ONE, glm::value_ptr(kd));
+            glUniform3fv(ks_id, ONE, glm::value_ptr(ks));
+            glUniform1f(alpha_id, alpha);
+        }
+};
+
+class Grid: public Material, public Light  {
 
     private:
         GLuint vertex_array_id_;                // vertex array object
         GLuint vertex_buffer_object_position_;  // memory buffer for positions
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
+        GLuint vertex_normal_buffer_object_;
         GLuint program_id_;                     // GLSL shader program ID
-        GLuint heightmap_;                     // texture ID
-        GLuint colormap_;                       // Colormap
+        GLuint texture_id_;                     // texture ID
+        GLuint heightmap_id_;
+        GLuint colormap_;
         GLuint num_indices_;                    // number of vertices to render
+        GLuint MVP_id_;                         // model, view, proj matrix ID
         GLuint M_id_;                         // model, view, proj matrix ID
         GLuint V_id_;
         GLuint P_id_;
 
-
     public:
-        void Init(GLuint tex) {
+        void Init(GLuint heightmap) {
             // compile the shaders.
             program_id_ = icg_helper::LoadShaders("grid_vshader.glsl",
                                                   "grid_fshader.glsl");
@@ -61,7 +85,8 @@ class Grid: public Light {
             {
                 std::vector<GLfloat> vertices;
                 std::vector<GLuint> indices;
-                int grid_dim = 100;
+                int grid_dim = 256;
+
 
                 for(int i=-grid_dim/2; i<grid_dim/2; i++) {
                     for(int j=-grid_dim/2; j<grid_dim/2; j++) {
@@ -105,18 +130,24 @@ class Grid: public Light {
                 glVertexAttribPointer(loc_position, 2, GL_FLOAT, DONT_NORMALIZE,
                                       ZERO_STRIDE, ZERO_BUFFER_OFFSET);
             }
-
             // load texture
             {
-                heightmap_ = tex;
+                this->texture_id_ = heightmap;
+                glBindTexture(GL_TEXTURE_2D, texture_id_);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
                 GLuint tex_id = glGetUniformLocation(program_id_, "tex");
-                glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
+                glUniform1i(tex_id, 1 /*GL_TEXTURE0*/);
+
+                // cleanup
+                glBindTexture(GL_TEXTURE_2D, 0);
             }
 
             {
                 const int ColormapSize=3;
                 GLfloat tex[3*ColormapSize] = {
-                                               /*green*/    48.0f/255.0f, 186.0f/256.0f, 143.0f/255.0f,
+                                               /*green*/    48.0f/255.0f, 186.0f/255.0f, 143.0f/255.0f,
                                                /*yellow*/   186/255.0f, 142/255.0f, 47/255.0f,
                                                /*white*/    150/255.0f, 141/255.0f, 153/255.0f};
                 glGenTextures(1, &colormap_);
@@ -125,19 +156,42 @@ class Grid: public Light {
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                GLuint tex_id = glGetUniformLocation(program_id_, "colormap");
-                glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
-                // check_error_gl();
+                GLuint colormap_id = glGetUniformLocation(program_id_, "colormap");
+                glUniform1i(colormap_id, 0 /*GL_TEXTURE1*/);
+                check_error_gl();
             }
+
             // other uniforms
+            MVP_id_ = glGetUniformLocation(program_id_, "MVP");
+
+            GLint vertex_normal_id = glGetAttribLocation(program_id_, "vnormal");
+            if (vertex_normal_id >= 0) {
+                glEnableVertexAttribArray(vertex_normal_id);
+
+                glBindBuffer(GL_ARRAY_BUFFER, vertex_normal_buffer_object_);
+                glVertexAttribPointer(vertex_normal_id, 3 /*vec3*/, GL_FLOAT,
+                                      DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+            }
+
+            this->heightmap_id_ = heightmap;
+            glBindTexture(GL_TEXTURE_2D, heightmap_id_);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            GLuint height_id = glGetUniformLocation(program_id_, "heightmap");
+            glUniform1i(height_id, 1 /*GL_TEXTURE1*/);
+
             M_id_ = glGetUniformLocation(program_id_, "M");
             V_id_ = glGetUniformLocation(program_id_, "V");
             P_id_ = glGetUniformLocation(program_id_, "P");
+
+
+
+            // cleanup
+            glBindTexture(GL_TEXTURE_2D, 0);
+
             // to avoid the current object being polluted
             glBindVertexArray(0);
             glUseProgram(0);
-
-            Light::Setup(program_id_);
         }
 
         void Cleanup() {
@@ -145,9 +199,11 @@ class Grid: public Light {
             glUseProgram(0);
             glDeleteBuffers(1, &vertex_buffer_object_position_);
             glDeleteBuffers(1, &vertex_buffer_object_index_);
+            glDeleteBuffers(1, &vertex_normal_buffer_object_);
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteProgram(program_id_);
-            glDeleteTextures(1, &heightmap_);
+            glDeleteTextures(1, &texture_id_);
+            glDeleteTextures(1, &colormap_);
         }
 
         void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
@@ -157,17 +213,29 @@ class Grid: public Light {
             glBindVertexArray(vertex_array_id_);
 
             // bind textures
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texture_id_);
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, heightmap_);
+            glBindTexture(GL_TEXTURE_1D, colormap_);
+
+            Material::Setup(program_id_);
+            Light::Setup(program_id_);
+
+            float scale = 1.0;
+            glm::mat4 M = model;
+            M = glm::translate(M, glm::vec3(0.0f, 0.0f, 0.5f));
+            M = glm::rotate(M, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+            M = glm::scale(M, glm::vec3(scale));
 
             // setup MVP
+            glm::mat4 MVP = projection*view*model;
+            glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));
+
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
 
             // draw
-            // TODO 5: for debugging it can be helpful to draw only the wireframe.
-            // You can do that by uncommenting the next line.
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
 

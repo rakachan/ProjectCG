@@ -1,5 +1,6 @@
 #pragma once
 #include "icg_helper.h"
+#include <iostream>
 
 class ScreenQuad {
 
@@ -7,7 +8,7 @@ class ScreenQuad {
         GLuint vertex_array_id_;        // vertex array object
         GLuint program_id_;             // GLSL shader program ID
         GLuint vertex_buffer_object_;   // memory buffer
-        GLuint texture_id_;   // texture velocity ID
+        GLuint texture_id_;             // texture ID
 
         float screenquad_width_;
         float screenquad_height_;
@@ -23,6 +24,8 @@ class ScreenQuad {
             // compile the shaders
             program_id_ = icg_helper::LoadShaders("screenquad_vshader.glsl",
                                                   "screenquad_fshader.glsl");
+
+
             if(!program_id_) {
                 exit(EXIT_FAILURE);
             }
@@ -74,13 +77,14 @@ class ScreenQuad {
                                       ZERO_BUFFER_OFFSET);
             }
 
-            // load/Assign textures
+            // load/Assign texture
             this->texture_id_ = texture;
             glBindTexture(GL_TEXTURE_2D, texture_id_);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             GLuint tex_id = glGetUniformLocation(program_id_, "tex");
             glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
+
 
             glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -107,7 +111,13 @@ class ScreenQuad {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
-            // bind texture
+            // window size uniforms
+            glUniform1f(glGetUniformLocation(program_id_, "tex_width"),
+                        this->screenquad_width_);
+            glUniform1f(glGetUniformLocation(program_id_, "tex_height"),
+                        this->screenquad_height_);
+
+
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture_id_);
 

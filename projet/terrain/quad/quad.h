@@ -2,6 +2,8 @@
 #include "icg_helper.h"
 #include "glm/gtc/type_ptr.hpp"
 
+
+
 class Quad {
 
     private:
@@ -9,6 +11,10 @@ class Quad {
         GLuint program_id_;             // GLSL shader program ID
         GLuint vertex_buffer_object_;   // memory buffer
         GLuint texture_id_;             // texture ID
+
+        float persistence_ = 0.35;
+        float amplitude_ = 2.1042;
+        float frequency_ = 2.0;
 
     public:
         void Init() {
@@ -118,6 +124,27 @@ class Quad {
             glDeleteTextures(1, &texture_id_);
         }
 
+        void changeAmp(float inc) {
+            amplitude_ += inc;
+            if(amplitude_ < 0.0) {
+                amplitude_ = 0.0;
+            }
+        }
+
+        void changePers(float inc) {
+            persistence_ += inc;
+            if(persistence_ < 0.0) {
+                persistence_ = 0.0;
+            }
+        }
+
+        void changeFreq(float inc) {
+            frequency_ += inc;
+            if(frequency_ < 0.0) {
+                frequency_ = 0.0;
+            }
+        }
+
         void Draw(const glm::mat4 &model,
                   const glm::mat4 &view,
                   const glm::mat4 &projection) {
@@ -132,6 +159,10 @@ class Quad {
             glm::mat4 MVP = projection*view*model;
             GLuint MVP_id = glGetUniformLocation(program_id_, "MVP");
             glUniformMatrix4fv(MVP_id, 1, GL_FALSE, value_ptr(MVP));
+
+            glUniform1f(glGetUniformLocation(program_id_, "amplitude_key"), amplitude_);
+            glUniform1f(glGetUniformLocation(program_id_, "persistence_key"), persistence_);
+            glUniform1f(glGetUniformLocation(program_id_, "frequency_key"), frequency_);
 
             // draw
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

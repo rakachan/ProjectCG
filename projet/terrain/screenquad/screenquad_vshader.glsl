@@ -1,6 +1,8 @@
-#version 330 core
+#version 330
+
 in vec3 vpoint;
 in vec2 vtexcoord;
+
 out vec2 uv;
 
 void main() {

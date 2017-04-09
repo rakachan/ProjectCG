@@ -5,6 +5,9 @@ in vec2 uv;
 out vec3 color;
 
 uniform sampler2D tex;
+uniform float persistence_key;
+uniform float amplitude_key;
+uniform float frequency_key;
 
 vec4 mod289(vec4 x)
 {
@@ -64,9 +67,9 @@ float perlin(vec2 p, float grid_dim) {
     return 2.4 * n_xy;
 }
 
-float fBm(vec2 p, int octaves, float persistence) {
+float fBm(vec2 p, int octaves) {
     float total = 0.0;
-    float frequency = 2.0;
+    float frequency = frequency_key;
     float amplitude = 0.5;
     float maxValue = 0.0;  // Used for normalizing result to 0.0 - 1.0
     for(int i=0;i<octaves;i++) {
@@ -74,8 +77,8 @@ float fBm(vec2 p, int octaves, float persistence) {
 
         maxValue += amplitude;
 
-        amplitude *= persistence;
-        frequency *= 2.1042;
+        amplitude *= persistence_key;
+        frequency *= amplitude_key;
     }
 
     return total/maxValue;
@@ -83,5 +86,5 @@ float fBm(vec2 p, int octaves, float persistence) {
 
 void main() {
 
-    color = vec3(fBm(uv, 10, 0.45));
+    color = vec3(fBm(uv, 10));
 }
