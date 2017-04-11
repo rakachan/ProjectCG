@@ -1,20 +1,31 @@
 #version 330 core
-out vec3 color;
+out vec4 color;
+
+in float height_modif;
 in vec2 uv;
 uniform sampler2D tex;
-uniform sampler2D tex_mirror;
+
+in vec3 light_dir;
+in vec3 view_dir;
+in vec4 vpoint_mv;
+
+uniform vec3 La, Ld, Ls;
+uniform vec3 ka, kd, ks;
+uniform float alpha;
 
 void main() {
-    /// TODO: query window_width/height using the textureSize(..) function on tex_mirror
-    ivec2 dim = textureSize(tex_mirror, 0);
-    float window_width = dim.x;
-    float window_height = dim.y;
-    /// TODO: use gl_FragCoord to build a new [_u,_v] coordinate to query the framebuffer
-    vec2 coord = vec2(gl_FragCoord.x/(window_width), 1-gl_FragCoord.y/(window_height));
-    /// NOTE: make sure you normalize gl_FragCoord by window_width/height
-    /// NOTE: you will have to flip the "v" coordinate as framebuffer is upside/down
-    /// TODO: mix the texture(tex,uv).rgb with the value you fetch by texture(tex_mirror,vec2(_u,_v)).rgb
-    float mir_part = 0.15f;
-    color = mix(texture(tex, uv).rgb, texture(tex_mirror, coord).rgb, vec3(mir_part));
-    //color = texture(tex,uv).rgb;
+    vec3 normal_tr = normalize(cross(dFdx(vpoint_mv.xyz), dFdy(vpoint_mv.xyz)));
+
+    vec3 nl = vec3(clamp(dot(normal_tr, light_dir), 0, 1));
+    vec3 diffuse =  nl * Ld;
+    color = vec4(0.0, 0.0, 0.9, 0.0);
+
+    float height = texture(tex, uv).r ;
+    if (height<height_modif) {
+        color.a = 0.3;
+    }
+    vec3 reflectn = normalize(reflect(-light_dir, normal_tr));
+    vec3 rv = vec3(pow(clamp(dot(reflectn, view_dir), 0, 1), alpha));
+    vec3 specular = ks * rv * Ls;
+    color = color + vec4(diffuse, 0.0) + vec4(specular, 0.0);
 }

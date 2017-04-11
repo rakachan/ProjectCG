@@ -2,31 +2,6 @@
 #include "icg_helper.h"
 #include <glm/gtc/type_ptr.hpp>
 
-struct Light {
-        glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
-
-        glm::vec3 light_pos = glm::vec3(0.0f, 0.0f, 2.0f);
-
-        // pass light properties to the shader
-        void Setup(GLuint program_id) {
-            glUseProgram(program_id);
-
-            // given in camera space
-            GLuint light_pos_id = glGetUniformLocation(program_id, "light_pos");
-
-            GLuint La_id = glGetUniformLocation(program_id, "La");
-            GLuint Ld_id = glGetUniformLocation(program_id, "Ld");
-            GLuint Ls_id = glGetUniformLocation(program_id, "Ls");
-
-            glUniform3fv(light_pos_id, ONE, glm::value_ptr(light_pos));
-            glUniform3fv(La_id, ONE, glm::value_ptr(La));
-            glUniform3fv(Ld_id, ONE, glm::value_ptr(Ld));
-            glUniform3fv(Ls_id, ONE, glm::value_ptr(Ls));
-        }
-};
-
 struct Material {
         glm::vec3 ka = glm::vec3(0.18f, 0.1f, 0.1f);
         glm::vec3 kd = glm::vec3(0.9f, 0.5f, 0.5f);
@@ -220,12 +195,6 @@ class Grid: public Material, public Light  {
 
             Material::Setup(program_id_);
             Light::Setup(program_id_);
-
-            float scale = 1.0;
-            glm::mat4 M = model;
-            M = glm::translate(M, glm::vec3(0.0f, 0.0f, 0.5f));
-            M = glm::rotate(M, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-            M = glm::scale(M, glm::vec3(scale));
 
             // setup MVP
             glm::mat4 MVP = projection*view*model;

@@ -29,6 +29,7 @@ mat4 trackball_matrix;
 mat4 old_trackball_matrix;
 
 FrameBuffer framebuffer;
+Floor water;
 Cube cube;
 Grid grid;
 Quad quad;
@@ -53,6 +54,7 @@ void Init(GLFWwindow* window) {
     screenquad.Init(window_width, window_height, framebuffer_texture_id);
     grid.Init(framebuffer_texture_id);
     quad.Init();
+    water.Init(framebuffer_texture_id);
 
     vec3 cam_pos(2.0f, 2.0f, 2.0f);
     vec3 cam_look(0.0f, 0.0f, 0.0f);
@@ -76,6 +78,7 @@ void Display() {
     //glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     grid.Draw(trackball_matrix, view_matrix, projection_matrix);
+    water.Draw(trackball_matrix, view_matrix, projection_matrix);
 }
 
 // Gets called when the windows/framebuffer is resized.
@@ -232,6 +235,8 @@ int main(int argc, char *argv[]) {
     grid.Cleanup();
     screenquad.Cleanup();
     quad.Cleanup();
+    water.Cleanup();
+
     /// Close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);
     glfwTerminate();

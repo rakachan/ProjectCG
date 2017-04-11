@@ -14,7 +14,8 @@ file(GLOB SHADERS
   cube/*.glsl
   grid/*.glsl
   quad/*.glsl
-  screenquad/*.glsl)
+  screenquad/*.glsl
+  floor/*.glsl)
 deploy_shaders_to_build_dir(${SHADERS})
 
 add_executable(${EXERCISENAME} ${SOURCES} ${HEADERS} ${SHADERS})
