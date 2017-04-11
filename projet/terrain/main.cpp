@@ -57,8 +57,10 @@ void Init(GLFWwindow* window) {
     water.Init(framebuffer_texture_id);
 
     vec3 cam_pos(2.0f, 2.0f, 2.0f);
-    vec3 cam_look(0.0f, 0.0f, 0.0f);
+    vec3 cam_look(0.0f, 0.0f, 0.2f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
+
+    vec3 cam_refl = vec3(cam_pos.x, cam_pos.y, -cam_pos.z);
     view_matrix = lookAt(cam_pos, cam_look, cam_up);
     float ratio = window_width / (float) window_height;
     projection_matrix = perspective(45.0f, ratio, 0.1f, 10.0f);
@@ -115,10 +117,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 quad.changePers(0.05);
             break;
             case GLFW_KEY_Z : //maps to Y key
-                quad.changeFreq(-1.0);
+                quad.changeFreq(-0.3);
             break;
             case GLFW_KEY_X :
-                quad.changeFreq(1.0);
+                quad.changeFreq(0.3);
             break;
             default:break;
         }

@@ -6,7 +6,7 @@ struct Light {
         glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
 
-        glm::vec3 light_pos = glm::vec3(-1.0f, -2.0f, 2.0f);
+        glm::vec3 light_pos = glm::vec3(-2.0f, 2.0f, 2.0f);
 
         // pass light properties to the shader
         void Setup(GLuint program_id) {
@@ -30,7 +30,7 @@ struct Water {
         glm::vec3 ka = glm::vec3(0.0f, 0.0f, 0.1f);
         glm::vec3 kd = glm::vec3(0.0f, 0.0f, 0.9f);
         glm::vec3 ks = glm::vec3(0.0f, 0.0f, 0.8f);
-        float alpha = 60.0f;
+        float alpha = 3.0f;
 
         // pass material properties to the shaders
         void Setup(GLuint program_id) {
@@ -56,6 +56,7 @@ class Floor: public Water, public Light {
         GLuint vertex_buffer_object_index_;     // memory buffer for indices
         GLuint vertex_normal_buffer_object_;
         GLuint texture_id_;
+        GLuint reflexion_id_;
         GLuint num_indices_;                    // number of vertices to render
         GLuint MVP_id_;                         // model, view, proj matrix ID
         GLuint M_id_;                         // model, view, proj matrix ID
@@ -135,9 +136,6 @@ class Floor: public Water, public Light {
 
                 GLuint tex_id = glGetUniformLocation(program_id_, "tex");
                 glUniform1i(tex_id, 1 /*GL_TEXTURE0*/);
-
-                // cleanup
-                glBindTexture(GL_TEXTURE_2D, 0);
             }
 
             MVP_id_ = glGetUniformLocation(program_id_, "MVP");
