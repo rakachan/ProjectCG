@@ -18,7 +18,7 @@ out float height_modif;
 
 void main() {
     uv = (position + vec2(1.0, 1.0)) * 0.5;
-    height_modif = 0.02*(sin(time)*sin(time+uv.x*uv.x*30)*sin(time+uv.y*uv.y*30))-0.2;
+    height_modif = 0.02*(sin(time)*sin(time+uv.x*20)*sin(time+uv.y*20))-0.2;
     mat4 MV = V*M;
     vec3 pos_3d = vec3(position.x, position.y, height_modif);
     vpoint_mv = MV * vec4(pos_3d, 1.0);

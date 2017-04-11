@@ -75,7 +75,7 @@ void Display() {
         quad.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
     framebuffer.Unbind();
     glViewport(0, 0, window_width, window_height);
-    //glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     grid.Draw(trackball_matrix, view_matrix, projection_matrix);
     water.Draw(trackball_matrix, view_matrix, projection_matrix);

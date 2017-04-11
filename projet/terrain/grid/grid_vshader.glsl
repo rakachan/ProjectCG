@@ -18,23 +18,6 @@ out vec3 view_dir;
 out vec4 vpoint_mv;
 
 void main() {
-    /*
-    mat4 MV = view * model;
-    vec4 vpoint_mv = MV * vec4(vpoint, 1.0);
-    //gl_Position = projection * vpoint_mv;
-    normal_mv = normalize(mat3(inverse(transpose(MV))) * vnormal);
-    light_dir = normalize(light_pos - vpoint_mv.xyz);
-    view_dir = normalize(-vpoint_mv.xyz);
-    */
-    /*
-    uv = (position + vec2(1.0, 1.0)) * 0.5;
-
-    float height = texture(tex, uv).r;
-
-    vec3 pos_3d = vec3(position.x, position.y, height);
-
-    gl_Position = MVP * vec4(pos_3d, 1.0);
-    */
     mat4 MV = V*M;
     uv = (position + vec2(1.0, 1.0)) * 0.5;
     float height = texture(tex, uv).r;
