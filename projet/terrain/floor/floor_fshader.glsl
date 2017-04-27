@@ -4,6 +4,7 @@ out vec4 color;
 in float height_modif;
 in vec2 uv;
 uniform sampler2D tex;
+uniform sampler2D reflection;
 in vec3 light_dir;
 in vec3 view_dir;
 in vec4 vpoint_mv;
@@ -30,5 +31,13 @@ void main() {
         //vec3 specular = vec3(0);
         color = color + vec4(diffuse, 0.0) + vec4(specular, 0.0);
     }
+
+    //reflection
+    ivec2 dim = textureSize(reflection, 0);
+    float window_width = dim.x;
+    float window_height = dim.y;
+    vec2 coord = vec2(gl_FragCoord.x/(window_width), 1-gl_FragCoord.y/(window_height));
+    float mir_part = 0.15f;
+    color = mix(color, texture(reflection, coord), vec4(mir_part));
 
 }

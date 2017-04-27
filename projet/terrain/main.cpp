@@ -27,8 +27,10 @@ mat4 view_matrix;
 mat4 view_proj;
 mat4 trackball_matrix;
 mat4 old_trackball_matrix;
+mat4 mirror_view;
 
 FrameBuffer framebuffer;
+FrameBuffer refFramebuffer;
 Floor water;
 Cube cube;
 Grid grid;
@@ -51,10 +53,13 @@ void Init(GLFWwindow* window) {
     GLuint framebuffer_texture_id;
     framebuffer_texture_id = framebuffer.Init(window_width, window_height);
 
+    GLuint framebuffer_reflection_id;
+    framebuffer_reflection_id = refFramebuffer.Init(window_width, window_height);
+
     screenquad.Init(window_width, window_height, framebuffer_texture_id);
     grid.Init(framebuffer_texture_id);
     quad.Init();
-    water.Init(framebuffer_texture_id);
+    water.Init(framebuffer_texture_id, framebuffer_reflection_id);
 
     vec3 cam_pos(2.0f, 2.0f, 2.0f);
     vec3 cam_look(0.0f, 0.0f, 0.2f);
@@ -66,6 +71,10 @@ void Init(GLFWwindow* window) {
     projection_matrix = perspective(45.0f, ratio, 0.1f, 10.0f);
     view_proj = projection_matrix*view_matrix;
 
+
+    mirror_view = lookAt(cam_refl, cam_look, cam_up);
+    //mirror_proj = projection_matrix * mirror_view;
+
 }
 
 void Display() {
@@ -76,9 +85,15 @@ void Display() {
     framebuffer.Bind();
         quad.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
     framebuffer.Unbind();
+
+    refFramebuffer.Clear();
+    refFramebuffer.Bind();
+        grid.Draw(trackball_matrix, mirror_view, projection_matrix);
+    refFramebuffer.Unbind();
     glViewport(0, 0, window_width, window_height);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //grid.Draw(trackball_matrix, mirror_view, projection_matrix);
     grid.Draw(trackball_matrix, view_matrix, projection_matrix);
     water.Draw(trackball_matrix, view_matrix, projection_matrix);
 }

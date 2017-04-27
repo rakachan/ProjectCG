@@ -41,6 +41,11 @@ class Grid: public Material, public Light  {
         GLuint V_id_;
         GLuint P_id_;
 
+        GLuint rock_id_;
+        GLuint snow_id_;
+        GLuint sand_id_;
+        GLuint grass_id_;
+
     public:
         void Init(GLuint heightmap) {
             // compile the shaders.
@@ -113,7 +118,7 @@ class Grid: public Material, public Light  {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
                 GLuint tex_id = glGetUniformLocation(program_id_, "tex");
-                glUniform1i(tex_id, 1 /*GL_TEXTURE0*/);
+                glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
 
                 // cleanup
                 glBindTexture(GL_TEXTURE_2D, 0);
@@ -132,8 +137,44 @@ class Grid: public Material, public Light  {
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 GLuint colormap_id = glGetUniformLocation(program_id_, "colormap");
-                glUniform1i(colormap_id, 0 /*GL_TEXTURE1*/);
+                //glUniform1i(colormap_id, 0 /*GL_TEXTURE1*/);
                 check_error_gl();
+            }
+
+            {  
+                string texture_names[] {"rock.tga", "snow.tga", "sand.tga", "grass.tga" };
+                string texs[] {"tex_rock", "tex_snow", "tex_sand", "tex_grass"};
+                GLuint* ids[] {&rock_id_, &snow_id_, &sand_id_, &grass_id_ };
+
+                for(int i = 0; i < 4; ++i) {
+                    int width;
+                    int height;
+                    int nb_component;
+                    // set stb_image to have the same coordinates as OpenGL
+                    stbi_set_flip_vertically_on_load(1);
+                    unsigned char* image = stbi_load(texture_names[i].c_str(), &width,
+                                                     &height, &nb_component, 0);
+
+                    if(image == nullptr) {
+                        throw(string("Failed to load texture"));
+                    }
+
+                    glGenTextures(1, ids[i]);
+                    glBindTexture(GL_TEXTURE_2D, *ids[i]);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+                    if(nb_component == 3) {
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+                                     GL_RGB, GL_UNSIGNED_BYTE, image);
+                    } else if(nb_component == 4) {
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                                     GL_RGBA, GL_UNSIGNED_BYTE, image);
+                    }
+                    GLuint tex_i = glGetUniformLocation(program_id_, texs[i].c_str());
+                    glUniform1i(tex_i, i+1 /*GL_TEXTUREi*/);
+                    check_error_gl();
+                }
             }
 
             // other uniforms
@@ -147,13 +188,13 @@ class Grid: public Material, public Light  {
                 glVertexAttribPointer(vertex_normal_id, 3 /*vec3*/, GL_FLOAT,
                                       DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
             }
-
+            /*
             this->heightmap_id_ = heightmap;
             glBindTexture(GL_TEXTURE_2D, heightmap_id_);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             GLuint height_id = glGetUniformLocation(program_id_, "heightmap");
-            glUniform1i(height_id, 1 /*GL_TEXTURE1*/);
+            glUniform1i(height_id, 1 /*GL_TEXTURE/);*/
 
             M_id_ = glGetUniformLocation(program_id_, "M");
             V_id_ = glGetUniformLocation(program_id_, "V");
@@ -179,6 +220,8 @@ class Grid: public Material, public Light  {
             glDeleteProgram(program_id_);
             glDeleteTextures(1, &texture_id_);
             glDeleteTextures(1, &colormap_);
+            glDeleteTextures(1, &snow_id_);
+            glDeleteTextures(1, &rock_id_);
         }
 
         void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
@@ -188,8 +231,16 @@ class Grid: public Material, public Light  {
             glBindVertexArray(vertex_array_id_);
 
             // bind textures
-            glActiveTexture(GL_TEXTURE1);
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture_id_);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, rock_id_);
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, snow_id_);
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, sand_id_);
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, grass_id_);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_1D, colormap_);
 

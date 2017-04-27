@@ -64,7 +64,7 @@ class Floor: public Water, public Light {
         GLuint P_id_;
 
     public:
-        void Init(int heightmap) {
+        void Init(int heightmap, int reflection) {
             // compile the shaders
             program_id_ = icg_helper::LoadShaders("floor_vshader.glsl",
                                                   "floor_fshader.glsl");
@@ -135,7 +135,17 @@ class Floor: public Water, public Light {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
                 GLuint tex_id = glGetUniformLocation(program_id_, "tex");
-                glUniform1i(tex_id, 1 /*GL_TEXTURE0*/);
+                glUniform1i(tex_id, 1 /*GL_TEXTURE1*/);
+            }
+
+            {
+                this->reflexion_id_ = reflection;
+                glBindTexture(GL_TEXTURE_2D, reflexion_id_);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+                GLuint ref_id = glGetUniformLocation(program_id_, "reflection");
+                glUniform1i(ref_id, 2 /*GL_TEXTURE2*/);
             }
 
             MVP_id_ = glGetUniformLocation(program_id_, "MVP");
@@ -153,6 +163,7 @@ class Floor: public Water, public Light {
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteProgram(program_id_);
             glDeleteTextures(1, &texture_id_);
+            glDeleteTextures(1, &reflexion_id_);
         }
 
         void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
@@ -160,6 +171,10 @@ class Floor: public Water, public Light {
                   const glm::mat4 &projection = IDENTITY_MATRIX) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
+
+
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, reflexion_id_);
                
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -10,7 +10,6 @@ uniform mat4 V;
 uniform vec3 light_pos;
 
 uniform mat4 MVP;
-uniform sampler2D heightmap;
 uniform sampler2D tex;
 
 out vec3 light_dir;
