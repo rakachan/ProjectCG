@@ -27,7 +27,7 @@ public:
       ProjectOntoSurface(current_pos);
 
       mat4 rotation = IDENTITY_MATRIX;
-      rotation = glm::rotate(rotation, -acos(dot(normalize(anchor_pos_), normalize(current_pos))), cross(anchor_pos_, current_pos));
+      rotation = glm::rotate(rotation, acos(dot(normalize(anchor_pos_), normalize(current_pos))), cross(anchor_pos_, current_pos));
       // TODO 3: Calculate the rotation given the projections of the anocher
       // point and the current position. The rotation axis is given by the cross
       // product of the two projected points, and the angle between them can be

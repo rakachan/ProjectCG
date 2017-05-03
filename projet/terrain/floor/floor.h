@@ -64,7 +64,7 @@ class Floor: public Water, public Light {
         GLuint P_id_;
 
     public:
-        void Init(int heightmap) {
+        void Init(int heightmap, int reflexion) {
             // compile the shaders
             program_id_ = icg_helper::LoadShaders("floor_vshader.glsl",
                                                   "floor_fshader.glsl");
@@ -130,12 +130,20 @@ class Floor: public Water, public Light {
             // load texture
             {
                 this->texture_id_ = heightmap;
-                glBindTexture(GL_TEXTURE_2D, texture_id_);
+                //glBindTexture(GL_TEXTURE_2D, texture_id_);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
                 GLuint tex_id = glGetUniformLocation(program_id_, "tex");
-                glUniform1i(tex_id, 1 /*GL_TEXTURE0*/);
+                glUniform1i(tex_id, texture_id_);
+
+                this->reflexion_id_ = reflexion;
+                //glBindTexture(GL_TEXTURE_2D, reflexion_id_);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+                GLuint ref_id = glGetUniformLocation(program_id_, "ref");
+                glUniform1i(ref_id, reflexion_id_);
             }
 
             MVP_id_ = glGetUniformLocation(program_id_, "MVP");
@@ -153,11 +161,13 @@ class Floor: public Water, public Light {
             glDeleteVertexArrays(1, &vertex_array_id_);
             glDeleteProgram(program_id_);
             glDeleteTextures(1, &texture_id_);
+            glDeleteTextures(2, &reflexion_id_);
         }
 
         void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
-                  const glm::mat4 &projection = IDENTITY_MATRIX) {
+                  const glm::mat4 &projection = IDENTITY_MATRIX,
+                  float time = 0) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
                
@@ -166,6 +176,12 @@ class Floor: public Water, public Light {
 
             Water::Setup(program_id_);
             Light::Setup(program_id_);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texture_id_);
+
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, reflexion_id_);
 
             // setup MVP
             glm::mat4 MVP = projection*view*model;
@@ -180,7 +196,7 @@ class Floor: public Water, public Light {
             //glUniformMatrix4fv(MVP_id, 1, GL_FALSE, value_ptr(MVP));
 
             // time
-            glUniform1f(glGetUniformLocation(program_id_, "time"), glfwGetTime());
+            glUniform1f(glGetUniformLocation(program_id_, "time"), time);
 
             // draw
             glDrawElements(GL_TRIANGLES, num_indices_, GL_UNSIGNED_INT, 0);
