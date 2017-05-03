@@ -6,42 +6,42 @@
 static const unsigned int NbCubeVertices = 36;
 static const glm::vec3 CubeVertices[] =
 {
-    glm::vec3(-0.5, -0.5, -0.5),
-    glm::vec3(-0.5, 0.5, -0.5),
-    glm::vec3(0.5, -0.5, -0.5),
-    glm::vec3(-0.5, 0.5, -0.5),
-    glm::vec3(0.5, -0.5, -0.5),
-    glm::vec3(0.5, 0.5, -0.5),
-    glm::vec3(0.5, 0.5, 0.5),
-    glm::vec3(0.5, -0.5, 0.5),
-    glm::vec3(0.5, 0.5, -0.5),
-    glm::vec3(0.5, -0.5, 0.5),
-    glm::vec3(0.5, 0.5, -0.5),
-    glm::vec3(0.5, -0.5, -0.5),
-    glm::vec3(0.5, 0.5, 0.5),
-    glm::vec3(-0.5, 0.5, 0.5),
-    glm::vec3(0.5, -0.5, 0.5),
-    glm::vec3(-0.5, 0.5, 0.5),
-    glm::vec3(0.5, -0.5, 0.5),
-    glm::vec3(-0.5, -0.5, 0.5),
-    glm::vec3(-0.5, -0.5, 0.5),
-    glm::vec3(-0.5, -0.5, -0.5),
-    glm::vec3(0.5, -0.5, 0.5),
-    glm::vec3(-0.5, -0.5, -0.5),
-    glm::vec3(0.5, -0.5, 0.5),
-    glm::vec3(0.5, -0.5, -0.5),
-    glm::vec3(-0.5, 0.5, -0.5),
-    glm::vec3(-0.5, -0.5, -0.5),
-    glm::vec3(-0.5, 0.5, 0.5),
-    glm::vec3(-0.5, -0.5, -0.5),
-    glm::vec3(-0.5, 0.5, 0.5),
-    glm::vec3(-0.5, -0.5, 0.5),
-    glm::vec3(0.5, 0.5, -0.5),
-    glm::vec3(-0.5, 0.5, -0.5),
-    glm::vec3(0.5, 0.5, 0.5),
-    glm::vec3(-0.5, 0.5, -0.5),
-    glm::vec3(0.5, 0.5, 0.5),
-    glm::vec3(-0.5, 0.5, 0.5)
+    glm::vec3(-4, -4, -4),
+    glm::vec3(-4, 4, -4),
+    glm::vec3(4, -4, -4),
+    glm::vec3(-4, 4, -4),
+    glm::vec3(4, -4, -4),
+    glm::vec3(4, 4, -4),
+    glm::vec3(4, 4, 4),
+    glm::vec3(4, -4, 4),
+    glm::vec3(4, 4, -4),
+    glm::vec3(4, -4, 4),
+    glm::vec3(4, 4, -4),
+    glm::vec3(4, -4, -4),
+    glm::vec3(4, 4, 4),
+    glm::vec3(-4, 4, 4),
+    glm::vec3(4, -4, 4),
+    glm::vec3(-4, 4, 4),
+    glm::vec3(4, -4, 4),
+    glm::vec3(-4, -4, 4),
+    glm::vec3(-4, -4, 4),
+    glm::vec3(-4, -4, -4),
+    glm::vec3(4, -4, 4),
+    glm::vec3(-4, -4, -4),
+    glm::vec3(4, -4, 4),
+    glm::vec3(4, -4, -4),
+    glm::vec3(-4, 4, -4),
+    glm::vec3(-4, -4, -4),
+    glm::vec3(-4, 4, 4),
+    glm::vec3(-4, -4, -4),
+    glm::vec3(-4, 4, 4),
+    glm::vec3(-4, -4, 4),
+    glm::vec3(4, 4, -4),
+    glm::vec3(-4, 4, -4),
+    glm::vec3(4, 4, 4),
+    glm::vec3(-4, 4, -4),
+    glm::vec3(4, 4, 4),
+    glm::vec3(-4, 4, 4)
 };
 
 static const unsigned int NbCubeColors = 36;
@@ -192,8 +192,8 @@ class Cube {
                 int width;
                 int height;
                 int nb_component;
-                string texture_filename = "cube_texture.tga";
-                stbi_set_flip_vertically_on_load(1);
+                string texture_filename = "skybox2.tga";
+                stbi_set_flip_vertically_on_load(0);
                 unsigned char* image = stbi_load(texture_filename.c_str(),
                                                  &width, &height, &nb_component, 0);
 

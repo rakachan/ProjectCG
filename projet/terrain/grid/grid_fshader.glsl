@@ -45,7 +45,7 @@ void main() {
     float a2 = 0.0;
     float a3 = 0.0;
 
-    float snow_height = 0.8;
+    float snow_height = 0.75;
     float rock_height = 0.6;
     float grass_height = 0.41;
 
@@ -59,22 +59,22 @@ void main() {
 
     }  else if (height > rock_height) {//rock
         a1 = 1.0;
-        if(height < rock_height + blend_region) {
-            a1 = 1.0 - abs(height - (rock_height + blend_region))/blend_length;
-            a0 = 1.0 - abs(height - (rock_height - blend_region))/blend_length;
+        if(height < rock_height + 10*blend_region) {
+            a1 = 1.0 - abs(height - (rock_height + 10*blend_region))/(blend_length*10);
+            a0 = 1.0 - abs(height - (rock_height - 10*blend_region))/(10*blend_length);
         } else if (height > snow_height - blend_region) {
             a2 = 1.0 - abs(height - (snow_height + blend_region))/blend_length;
             a1 = 1.0 - abs(height - (snow_height - blend_region))/blend_length;
         }
 
-    } else if (height > grass_height) { //tex
+    } else if (height > grass_height) { //grass
         a0 = 1.0;
         if(height < grass_height + blend_region) {
             a0 = 1.0 - abs(height - (grass_height + blend_region))/blend_length;
             a3 = 1.0 - abs(height - (grass_height - blend_region))/blend_length;
-        } else if (height > rock_height - blend_region) {
-            a1 = 1.0 - abs(height - (rock_height + blend_region))/blend_length;
-            a0 = 1.0 - abs(height - (rock_height - blend_region))/blend_length;
+        } else if (height > rock_height - 10*blend_region) {
+            a1 = 1.0 - abs(height - (rock_height + 10*blend_region))/(10*blend_length);
+            a0 = 1.0 - abs(height - (rock_height - 10*blend_region))/(10*blend_length);
         }
 
     } else {//sand

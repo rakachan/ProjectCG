@@ -194,7 +194,7 @@ class Grid: public Material, public Light  {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             GLuint height_id = glGetUniformLocation(program_id_, "heightmap");
-            glUniform1i(height_id, 1 /*GL_TEXTURE/);*/
+            glUniform1i(height_id, 1 GL_TEXTURE/);*/
 
             M_id_ = glGetUniformLocation(program_id_, "M");
             V_id_ = glGetUniformLocation(program_id_, "V");

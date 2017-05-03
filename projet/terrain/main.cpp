@@ -32,7 +32,7 @@ mat4 mirror_view;
 FrameBuffer framebuffer;
 FrameBuffer refFramebuffer;
 Floor water;
-Cube cube;
+Cube sky;
 Grid grid;
 Quad quad;
 ScreenQuad screenquad;
@@ -59,6 +59,7 @@ void Init(GLFWwindow* window) {
     screenquad.Init(window_width, window_height, framebuffer_texture_id);
     grid.Init(framebuffer_texture_id);
     quad.Init();
+    sky.Init();
     water.Init(framebuffer_texture_id, framebuffer_reflection_id);
 
     vec3 cam_pos(2.0f, 2.0f, 2.0f);
@@ -96,6 +97,7 @@ void Display() {
     //grid.Draw(trackball_matrix, mirror_view, projection_matrix);
     grid.Draw(trackball_matrix, view_matrix, projection_matrix);
     water.Draw(trackball_matrix, view_matrix, projection_matrix);
+    sky.Draw(projection_matrix * view_matrix);
 }
 
 // Gets called when the windows/framebuffer is resized.
@@ -253,6 +255,7 @@ int main(int argc, char *argv[]) {
     screenquad.Cleanup();
     quad.Cleanup();
     water.Cleanup();
+    sky.Cleanup();
 
     /// Close OpenGL window and terminate GLFW
     glfwDestroyWindow(window);

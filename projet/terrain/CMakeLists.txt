@@ -4,7 +4,8 @@ file(GLOB_RECURSE HEADERS "*.h")
 
 # these files are copied only once
 file(GLOB TEXTURES
-    cube/cube_texture.tga
+    cube/skybox.tga
+    cube/skybox2.tga
     grid/snow.tga
     grid/rock.tga
     grid/sand.tga
