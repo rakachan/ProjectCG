@@ -31,6 +31,7 @@ mat4 refl_matrix;
 //mat4 view_refl;
 mat4 trackball_matrix;
 mat4 old_trackball_matrix;
+mat4 mirror_view;
 
 FrameBuffer framebuffer;
 FrameBuffer reflexion;
@@ -63,7 +64,6 @@ void Init(GLFWwindow* window) {
     grid.Init(framebuffer_texture_id);
     quad.Init();
     water.Init(framebuffer_texture_id, reflexion_texture_id);
-
     vec3 cam_pos(2.0f, 2.0f, 2.0f);
     vec3 cam_look(0.0f, 0.0f, 0.0f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
@@ -76,7 +76,10 @@ void Init(GLFWwindow* window) {
     float ratio = window_width / (float) window_height;
     projection_matrix = perspective(45.0f, ratio, 0.1f, 10.0f);
     //view_proj = projection_matrix*view_matrix;
-    //view_refl = projection_matrix*refl_matrix;
+
+
+    mirror_view = lookAt(cam_refl, cam_look, cam_up);
+    //mirror_proj = projection_matrix * mirror_view;
 }
 
 void Display() {
@@ -100,7 +103,6 @@ void Display() {
     grid.Draw(trackball_matrix, view_matrix, projection_matrix, time);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, time, 0, 1);
     water.Draw(trackball_matrix, view_matrix, projection_matrix, time);
-
 }
 
 // Gets called when the windows/framebuffer is resized.

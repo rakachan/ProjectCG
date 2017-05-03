@@ -170,6 +170,10 @@ class Floor: public Water, public Light {
                   float time = 0) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
+
+
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, reflexion_id_);
                
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

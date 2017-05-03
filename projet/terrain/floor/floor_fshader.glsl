@@ -37,5 +37,4 @@ void main() {
     } else {
         discard;
     }
-
 }
