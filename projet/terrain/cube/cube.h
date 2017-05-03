@@ -95,6 +95,7 @@ static const unsigned int NbCubeUVs = 36;
 
 static const glm::vec2 CubeUVs[] =
 {
+    /*
     //behind
     glm::vec2(0.25, 0.333),
     glm::vec2(0.25, 0.666),
@@ -138,6 +139,51 @@ static const glm::vec2 CubeUVs[] =
     glm::vec2(0.25, 0.666),
     glm::vec2(0.5, 1),
     glm::vec2(0.25, 1)
+    */
+
+    //behind
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.25, 1),
+    glm::vec2(0.5, 0.666),
+    glm::vec2(0.25, 1),
+    glm::vec2(0.5, 0.666),
+    glm::vec2(0.5, 1),
+    //right
+    glm::vec2(0.75, 0.333),
+    glm::vec2(0.5, 0.333),
+    glm::vec2(0.75, 0.666),
+    glm::vec2(0.5, 0.333),
+    glm::vec2(0.75, 0.666),
+    glm::vec2(0.5, 0.666),
+    //front
+    glm::vec2(0.5, 0.0),
+    glm::vec2(0.25, 0.0),
+    glm::vec2(0.5, 0.333),
+    glm::vec2(0.25, 0.0),
+    glm::vec2(0.5, 0.333),
+    glm::vec2(0.25, 0.333),
+    //bottom
+    glm::vec2(0.25, 0.333),
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.5, 0.333),
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.5, 0.333),
+    glm::vec2(0.5, 0.666),
+    //left
+    glm::vec2(0.0, 0.666),
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.0, 0.333),
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.0, 0.333),
+    glm::vec2(0.25, 0.333),
+
+    //top
+    glm::vec2(0.75, 0.666),
+    glm::vec2(1, 0.666),
+    glm::vec2(0.75, 0.333),
+    glm::vec2(1, 0.666),
+    glm::vec2(0.75, 0.333),
+    glm::vec2(1, 0.333)
 };
 
 class Cube {
@@ -200,7 +246,7 @@ class Cube {
                 int width;
                 int height;
                 int nb_component;
-                string texture_filename = "skybox2.tga";
+                string texture_filename = "skybox.tga";
                 stbi_set_flip_vertically_on_load(0);
                 unsigned char* image = stbi_load(texture_filename.c_str(),
                                                  &width, &height, &nb_component, 0);
