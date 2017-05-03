@@ -67,11 +67,11 @@ void Init(GLFWwindow* window) {
 
     water.Init(framebuffer_texture_id, reflexion_texture_id);
 
-    vec3 cam_pos(2.0f, 2.0f, 2.0f);
+    vec3 cam_pos(0.0f, -0.5f, 1.0f);
     vec3 cam_look(0.0f, 0.0f, 0.0f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
 
-    vec3 cam_refl(2.0f, 2.0f, -2.0f);
+    vec3 cam_refl(0.0f, -0.5f, -1.0f);
     vec3 up_refl(0.0f, 0.0f, 1.0f);
 
     view_matrix = lookAt(cam_pos, cam_look, cam_up);
@@ -95,20 +95,20 @@ void Display() {
     framebuffer.Unbind();
     reflexion.Clear();
     reflexion.Bind();
-        /*glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);*/
-        grid.Draw(trackball_matrix, view_matrix, projection_matrix, inc_time, 0, 1);
-        //sky.Draw(trackball_matrix, mirror_view, projection_matrix, 1);
-        //glDisable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        sky.Draw(rotate(trackball_matrix, (3.14159f)/2.0f, vec3(1, 0, 0)), view_matrix, projection_matrix);
+        grid.Draw(trackball_matrix, view_matrix, projection_matrix, 0, 0, 1);
+        glDepthFunc(GL_LESS);
     reflexion.Unbind();
     glViewport(0, 0, window_width, window_height);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    sky.Draw(trackball_matrix, view_matrix, projection_matrix);
-    grid.Draw(trackball_matrix, view_matrix, projection_matrix, inc_time);
+    sky.Draw(rotate(trackball_matrix, (-3.14159f)/2.0f, vec3(1, 0, 0)), view_matrix, projection_matrix);
+    grid.Draw(trackball_matrix, view_matrix, projection_matrix);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, time, 0, 1);
-    water.Draw(trackball_matrix, view_matrix, projection_matrix, inc_time);
+    water.Draw(trackball_matrix, view_matrix, projection_matrix);
 }
 
 // Gets called when the windows/framebuffer is resized.

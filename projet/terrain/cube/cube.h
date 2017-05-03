@@ -200,7 +200,7 @@ class Cube {
                 int width;
                 int height;
                 int nb_component;
-                string texture_filename = "skybox2.tga";
+                string texture_filename = "skybox.tga";
                 stbi_set_flip_vertically_on_load(0);
                 unsigned char* image = stbi_load(texture_filename.c_str(),
                                                  &width, &height, &nb_component, 0);
@@ -249,7 +249,7 @@ class Cube {
         void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX,
-                int reverse = 0){
+                  int reverse = 0){
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
             /*

@@ -1,6 +1,7 @@
 #version 330 core
 uniform mat4 MVP;
 uniform float time;
+uniform int reverse;
 in vec3 vpoint;
 in vec2 vtexcoord;
 out vec2 uv;
@@ -23,7 +24,12 @@ mat4 T(float tx, float ty, float tz){
 }
 
 void main(){
-    gl_Position =  MVP * vec4(vpoint, 1.0);//MVP * R(50*time) * T(1,0,0) * R(50*time)* vec4(vpoint,1); ///< spin-circ
+    vec3 pos = vpoint;
+    if (reverse==1) {
+        pos.z=-pos.z;
+    }
+    gl_Position =  MVP * vec4(pos, 1.0);//MVP * R(50*time) * T(1,0,0) * R(50*time)* vec4(vpoint,1); ///< spin-circ
+
 //    gl_Position =  MVP * R(50*time)* vec4(vpoint,1); ///< spin
 //    gl_Position =  MVP * R(0) * vec4(vpoint,1); ///< still
     uv = vtexcoord;
