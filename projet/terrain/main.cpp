@@ -97,7 +97,7 @@ void Display() {
     reflexion.Bind();
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        sky.Draw(rotate(trackball_matrix, (3.14159f)/2.0f, vec3(1, 0, 0)), view_matrix, projection_matrix);
+        sky.Draw(rotate(trackball_matrix, (3.14159f), vec3(1, 0, 0)), view_matrix, projection_matrix);
         grid.Draw(trackball_matrix, view_matrix, projection_matrix, 0, 0, 1);
         glDepthFunc(GL_LESS);
     reflexion.Unbind();
@@ -105,7 +105,7 @@ void Display() {
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    sky.Draw(rotate(trackball_matrix, (-3.14159f)/2.0f, vec3(1, 0, 0)), view_matrix, projection_matrix);
+    sky.Draw(trackball_matrix, view_matrix, projection_matrix);
     grid.Draw(trackball_matrix, view_matrix, projection_matrix);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, time, 0, 1);
     water.Draw(trackball_matrix, view_matrix, projection_matrix);
