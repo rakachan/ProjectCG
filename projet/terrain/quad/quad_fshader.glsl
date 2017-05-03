@@ -73,7 +73,7 @@ float fBm(vec2 p, int octaves) {
     float amplitude = 0.5;
     float maxValue = 0.0;  // Used for normalizing result to 0.0 - 1.0
     for(int i=0;i<octaves;i++) {
-        total += perlin(p, frequency) * amplitude;
+        total += perlin(p, frequency) * amplitude * (2 / frequency_key) ;
 
         maxValue += amplitude;
 

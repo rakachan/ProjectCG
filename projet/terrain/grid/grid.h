@@ -121,7 +121,7 @@ class Grid: public Material, public Light  {
                 glUniform1i(tex_id, 0 /*GL_TEXTURE0*/);
 
                 // cleanup
-                glBindTexture(GL_TEXTURE_2D, 0);
+                glBindTexture(GL_TEXTURE_2D, texture_id_);
             }
 
             {
@@ -226,7 +226,10 @@ class Grid: public Material, public Light  {
 
         void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
-                  const glm::mat4 &projection = IDENTITY_MATRIX) {
+                  const glm::mat4 &projection = IDENTITY_MATRIX,
+                  float time = 0,
+                  int draw_zero = 1,
+                  int reverse = 0) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
@@ -248,12 +251,19 @@ class Grid: public Material, public Light  {
             Light::Setup(program_id_);
 
             // setup MVP
-            glm::mat4 MVP = projection*view*model;
-            glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));
+            //glm::mat4 MVP = projection*view*model;
+            //glUniformMatrix4fv(MVP_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(MVP));
 
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
+
+            GLuint draw = glGetUniformLocation(program_id_, "draw");
+            glUniform1i(draw, draw_zero);
+            GLuint rev = glGetUniformLocation(program_id_, "reverse");
+            glUniform1i(rev, reverse);
+
+            glUniform1f(glGetUniformLocation(program_id_, "time"), time);
 
             // draw
             //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

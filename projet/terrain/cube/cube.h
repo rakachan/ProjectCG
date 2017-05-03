@@ -6,36 +6,42 @@
 static const unsigned int NbCubeVertices = 36;
 static const glm::vec3 CubeVertices[] =
 {
+    //derrière
     glm::vec3(-4, -4, -4),
     glm::vec3(-4, 4, -4),
     glm::vec3(4, -4, -4),
     glm::vec3(-4, 4, -4),
     glm::vec3(4, -4, -4),
     glm::vec3(4, 4, -4),
+    //right
     glm::vec3(4, 4, 4),
     glm::vec3(4, -4, 4),
     glm::vec3(4, 4, -4),
     glm::vec3(4, -4, 4),
     glm::vec3(4, 4, -4),
     glm::vec3(4, -4, -4),
+    //avant
     glm::vec3(4, 4, 4),
     glm::vec3(-4, 4, 4),
     glm::vec3(4, -4, 4),
     glm::vec3(-4, 4, 4),
     glm::vec3(4, -4, 4),
     glm::vec3(-4, -4, 4),
+    //bas
     glm::vec3(-4, -4, 4),
     glm::vec3(-4, -4, -4),
     glm::vec3(4, -4, 4),
     glm::vec3(-4, -4, -4),
     glm::vec3(4, -4, 4),
     glm::vec3(4, -4, -4),
+    //left
     glm::vec3(-4, 4, -4),
     glm::vec3(-4, -4, -4),
     glm::vec3(-4, 4, 4),
     glm::vec3(-4, -4, -4),
     glm::vec3(-4, 4, 4),
     glm::vec3(-4, -4, 4),
+    //top
     glm::vec3(4, 4, -4),
     glm::vec3(-4, 4, -4),
     glm::vec3(4, 4, 4),
@@ -89,47 +95,49 @@ static const unsigned int NbCubeUVs = 36;
 
 static const glm::vec2 CubeUVs[] =
 {
-    glm::vec2(0.333, 0.75),
-    glm::vec2(0.666, 0.75),
-    glm::vec2(0.333, 0.5),
-    glm::vec2(0.666, 0.75),
-    glm::vec2(0.333, 0.5),
-    glm::vec2(0.666, 0.5),
+    //behind
+    glm::vec2(0.25, 0.333),
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.5, 0.333),
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.5, 0.333),
+    glm::vec2(0.5, 0.666),
+    //right
+    glm::vec2(0.75, 0.666),
+    glm::vec2(0.75, 0.333),
+    glm::vec2(0.5, 0.666),
+    glm::vec2(0.75, 0.333),
+    glm::vec2(0.5, 0.666),
+    glm::vec2(0.5, 0.333),
+    //front
+    glm::vec2(0.75, 0.666),
+    glm::vec2(1.0, 0.666),
+    glm::vec2(0.75, 0.333),
+    glm::vec2(1.0, 0.666),
+    glm::vec2(0.75, 0.333),
+    glm::vec2(1.0, 0.333),
+    //bottom
+    glm::vec2(0.25, 0.0),
+    glm::vec2(0.25, 0.333),
+    glm::vec2(0.5, 0.0),
+    glm::vec2(0.25, 0.333),
+    glm::vec2(0.5, 0.0),
+    glm::vec2(0.5, 0.333),
+    //left
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.25, 0.333),
+    glm::vec2(0.0, 0.666),
+    glm::vec2(0.25, 0.333),
+    glm::vec2(0.0, 0.666),
+    glm::vec2(0.0, 0.333),
 
-    glm::vec2(0.666, 0.25),
-    glm::vec2(0.333, 0.25),
-    glm::vec2(0.666, 0.5),
-    glm::vec2(0.333, 0.25),
-    glm::vec2(0.666, 0.5),
-    glm::vec2(0.333, 0.5),
-
-    glm::vec2(0.666, 0.25),
-    glm::vec2(0.666, 0.0),
-    glm::vec2(0.333, 0.25),
-    glm::vec2(0.666, 0.0),
-    glm::vec2(0.333, 0.25),
-    glm::vec2(0.333, 0.0),
-
-    glm::vec2(0.0, 0.75),
-    glm::vec2(0.333, 0.75),
-    glm::vec2(0.0, 0.5),
-    glm::vec2(0.333, 0.75),
-    glm::vec2(0.0, 0.5),
-    glm::vec2(0.333, 0.5),
-
-    glm::vec2(0.666, 0.75),
-    glm::vec2(0.333, 0.75),
-    glm::vec2(0.666, 1.0),
-    glm::vec2(0.333, 0.75),
-    glm::vec2(0.666, 1.0),
-    glm::vec2(0.333, 1.0),
-
-    glm::vec2(0.666, 0.5),
-    glm::vec2(0.666, 0.75),
-    glm::vec2(1.0, 0.5),
-    glm::vec2(0.666, 0.75),
-    glm::vec2(1.0, 0.5),
-    glm::vec2(1.0, 0.75)
+    //top
+    glm::vec2(0.5, 0.666),
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.5, 1),
+    glm::vec2(0.25, 0.666),
+    glm::vec2(0.5, 1),
+    glm::vec2(0.25, 1)
 };
 
 class Cube {
@@ -238,10 +246,17 @@ class Cube {
             glDeleteTextures(1, &texture_id_);
         }
 
-        void Draw(const glm::mat4& view_projection){
+        void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
+                  const glm::mat4 &view = IDENTITY_MATRIX,
+                  const glm::mat4 &projection = IDENTITY_MATRIX,
+                int reverse = 0){
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
-
+            /*
+            glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
+            glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
+            glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
+            */
             // bind textures
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture_id_);
@@ -250,9 +265,14 @@ class Cube {
             glUniform1f(glGetUniformLocation(program_id_, "time"), glfwGetTime());
 
             // setup MVP
-            glm::mat4 MVP = view_projection * model_matrix_;
+            model_matrix_ = glm::scale(model, glm::vec3(0.5f));
+            //model_matrix_ = glm::rotate(mat4(model_matrix_), glm::radians(90.0), vec3(0, 0, 0));
+            glm::mat4 MVP = projection * view * model_matrix_;//view_projection * model_matrix_;
             GLuint MVP_id = glGetUniformLocation(program_id_, "MVP");
             glUniformMatrix4fv(MVP_id, 1, GL_FALSE, value_ptr(MVP));
+
+            GLuint rev = glGetUniformLocation(program_id_, "reverse");
+            glUniform1i(rev, reverse);
 
             // draw
             glDrawArrays(GL_TRIANGLES,0, NbCubeVertices);
