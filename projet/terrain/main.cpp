@@ -14,6 +14,8 @@
 #include "screenquad/screenquad.h"
 #include "quad/quad.h"
 
+#define PI 3.14159
+
 
 using namespace glm;
 
@@ -21,6 +23,7 @@ int window_width = 1280;
 int window_height = 720;
 
 double y_anch;
+double x_anch;
 
 float inc_time;
 
@@ -42,6 +45,15 @@ Quad quad;
 ScreenQuad screenquad;
 
 Trackball trackball;
+
+vec3 cam_pos(0.0f, -0.5f, 1.0f);
+vec3 cam_look(0.0f, 0.0f, 0.0f);
+vec3 cam_up(0.0f, 0.0f, 1.0f);
+vec3 oldcam_dir = cam_look - cam_pos;
+vec3 cam_dir = cam_look - cam_pos;
+vec3 mov_dir(0, 0, 0);
+
+vec3 cam_refl(0.0f, -0.5f, -1.0f);
 
 using namespace glm;
 
@@ -67,15 +79,11 @@ void Init(GLFWwindow* window) {
 
     water.Init(framebuffer_texture_id, reflexion_texture_id);
 
-    vec3 cam_pos(0.0f, -0.5f, 1.0f);
-    vec3 cam_look(0.0f, 0.0f, 0.0f);
-    vec3 cam_up(0.0f, 0.0f, 1.0f);
 
-    vec3 cam_refl(0.0f, -0.5f, -1.0f);
-    vec3 up_refl(0.0f, 0.0f, 1.0f);
+    //vec3 up_refl(0.0f, 0.0f, 1.0f);
 
     view_matrix = lookAt(cam_pos, cam_look, cam_up);
-    refl_matrix = lookAt(cam_refl, cam_look, up_refl);
+    //refl_matrix = lookAt(cam_refl, cam_look, up_refl);
     float ratio = window_width / (float) window_height;
     projection_matrix = perspective(45.0f, ratio, 0.1f, 10.0f);
     //view_proj = projection_matrix*view_matrix;
@@ -89,6 +97,10 @@ void Display() {
     //glViewport(0,0,window_width,window_height);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     inc_time = glfwGetTime();
+    cam_pos=cam_pos+0.01f*mov_dir;
+    cam_look=cam_look+0.01f*mov_dir;
+    mov_dir=0.9f*mov_dir;
+    view_matrix = lookAt(cam_pos, cam_look, cam_up);
     framebuffer.Clear();
     framebuffer.Bind();
         quad.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
@@ -98,7 +110,7 @@ void Display() {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         sky.Draw(rotate(trackball_matrix, (3.14159f), vec3(1, 0, 0)), view_matrix, projection_matrix);
-        grid.Draw(trackball_matrix, view_matrix, projection_matrix, 0, 0, 1);
+        grid.Draw(trackball_matrix, view_matrix, projection_matrix, inc_time, 0, 1);
         glDepthFunc(GL_LESS);
     reflexion.Unbind();
     glViewport(0, 0, window_width, window_height);
@@ -108,7 +120,7 @@ void Display() {
     sky.Draw(trackball_matrix, view_matrix, projection_matrix);
     grid.Draw(trackball_matrix, view_matrix, projection_matrix);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, time, 0, 1);
-    water.Draw(trackball_matrix, view_matrix, projection_matrix);
+    water.Draw(trackball_matrix, view_matrix, projection_matrix, inc_time);
 }
 
 // Gets called when the windows/framebuffer is resized.
@@ -152,6 +164,35 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             case GLFW_KEY_X :
                 quad.changeFreq(0.3);
             break;
+            case GLFW_KEY_UP :
+                mov_dir = normalize(cam_dir);
+            break;
+            case GLFW_KEY_DOWN :
+                mov_dir = -normalize(cam_dir);
+            break;
+            case GLFW_KEY_LEFT :
+                mov_dir = -normalize(cross(cam_dir, cam_up));
+            break;
+            case GLFW_KEY_RIGHT :
+                mov_dir = normalize(cross(cam_dir, cam_up));
+            break;
+            default: break;
+        }
+    }
+      if (action == GLFW_REPEAT) {
+          switch(key) {
+            case GLFW_KEY_UP :
+                mov_dir = normalize(cam_dir);
+            break;
+            case GLFW_KEY_DOWN :
+                mov_dir = -normalize(cam_dir);
+            break;
+            case GLFW_KEY_LEFT :
+                mov_dir = -normalize(cross(cam_dir, cam_up));
+            break;
+            case GLFW_KEY_RIGHT :
+                mov_dir = normalize(cross(cam_dir, cam_up));
+            break;
             default:break;
         }
     }
@@ -173,13 +214,16 @@ void MouseButton(GLFWwindow* window, int button, int action, int mod) {
         double x_i, y_i;
         glfwGetCursorPos(window, &x_i, &y_i);
         vec2 p = TransformScreenCoords(window, x_i, y_i);
-        trackball.BeingDrag(p.x*2-1, p.y*2-1);
+        trackball.BeingDrag(p.x, p.y);
         old_trackball_matrix = trackball_matrix;
+        oldcam_dir = cam_look - cam_pos;
         // Store the current state of the model matrix.
     }
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
         double x_i, y_i;
         glfwGetCursorPos(window, &x_i, &y_i);
+
+
         y_anch = y_i;
     }
 }
@@ -191,7 +235,11 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // trackball.Drag(...) and the value stored in 'old_trackball_matrix'.
         // See also the mouse_button(...) function.
         // trackball_matrix = ...
-        trackball_matrix = trackball.Drag(p.x*2-1, p.y*2-1) * old_trackball_matrix;
+        cam_dir = trackball.Drag(p.x, p.y, oldcam_dir);
+        cam_look = cam_pos + cam_dir;
+        view_matrix = lookAt(cam_pos, cam_look, cam_up);
+        oldcam_dir = cam_dir;
+        //trackball_matrix = trackball.Drag(p.x*2-1, p.y*2-1) * old_trackball_matrix;
     }
 
     // zoom
@@ -201,8 +249,9 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // should zoom out and it. For that you have to update the current
         // 'view_matrix' with a translation along the z axis.
         float c = (y-y_anch)/50.0f;
-        view_matrix = translate(view_matrix, vec3(c, c, 2.0f*c));
-        refl_matrix = translate(refl_matrix, vec3(c, c, 2.0f*c));
+        cam_pos = cam_pos+vec3(c, c, c);
+        view_matrix = lookAt(cam_pos, cam_look, cam_up);
+        //view_matrix = translate(view_matrix, vec3(c, c, 2.0f*c));
         y_anch = y;
     }
 }

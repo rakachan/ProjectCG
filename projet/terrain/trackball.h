@@ -2,6 +2,8 @@
 #include "icg_helper.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtx/rotate_vector.hpp>
+#define PI 3.14159
 
 using namespace glm;
 
@@ -13,8 +15,8 @@ public:
     // x, and y are in [-1, 1]. (-1, -1) is the bottom left corner while (1, 1)
     // is the top right corner.
     void BeingDrag(float x, float y) {
-      anchor_pos_ = vec3(x, y, 0.0f);
-      ProjectOntoSurface(anchor_pos_);
+      anchor_pos_ = (vec3(x, y, 0.0f));
+      //ProjectOntoSurface(anchor_pos_);
     }
 
     // this function is called while the user moves the curser around while the
@@ -22,12 +24,22 @@ public:
     // x, and y are in [-1, 1]. (-1, -1) is the bottom left corner while (1, 1)
     // is the top right corner.
     // returns the rotation of the trackball in matrix form.
-    mat4 Drag(float x, float y) {
-      vec3 current_pos = vec3(x, y, 0.0f);
-      ProjectOntoSurface(current_pos);
+    vec3 Drag(float x, float y, vec3 dir, vec3 up = vec3(0, 0, 1)) {
+      vec3 current_pos = (vec3(x, y, 0.0f));
+      //ProjectOntoSurface(current_pos);
+      //vec4 rotation = IDENTITY_MATRIX;
+      //rotation = glm::rotate(rotation, 0.1f*acos(dot(normalize(anchor_pos_), normalize(current_pos))), cross(anchor_pos_, current_pos));
+      vec3 d = dir;
+      vec3 axis = cross(dir, up);
+      d = glm::rotate(d,  2*1.0f * (current_pos.y - anchor_pos_.y), axis);
+      d = glm::rotateZ(d, -3.14159f * (current_pos.x - anchor_pos_.x));
+      if (abs(dot(normalize(d), up))>0.95) {
+          d = glm::rotate(d, -5 *(current_pos.y - anchor_pos_.y), axis);
+      }
+      anchor_pos_ = current_pos;
 
-      mat4 rotation = IDENTITY_MATRIX;
-      rotation = glm::rotate(rotation, acos(dot(normalize(anchor_pos_), normalize(current_pos))), cross(anchor_pos_, current_pos));
+
+      //rotation = IDENTITY_MATRIX;
       // TODO 3: Calculate the rotation given the projections of the anocher
       // point and the current position. The rotation axis is given by the cross
       // product of the two projected points, and the angle between them can be
@@ -35,7 +47,7 @@ public:
       // you might want to scale the rotation magnitude by a scalar factor.
       // p.s. No need for using complicated quaternions as suggested inthe wiki
       // article.
-      return rotation;
+      return d;
     }
 
 private:
