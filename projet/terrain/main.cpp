@@ -117,7 +117,7 @@ void Display() {
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    sky.Draw(trackball_matrix, view_matrix, projection_matrix);
+    sky.Draw(translate(trackball_matrix, cam_pos), view_matrix, projection_matrix);
     grid.Draw(trackball_matrix, view_matrix, projection_matrix);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, time, 0, 1);
     water.Draw(trackball_matrix, view_matrix, projection_matrix, inc_time);
@@ -250,6 +250,7 @@ void MousePos(GLFWwindow* window, double x, double y) {
         // 'view_matrix' with a translation along the z axis.
         float c = (y-y_anch)/50.0f;
         cam_pos = cam_pos+vec3(c, c, c);
+        cam_dir = cam_look - cam_pos;
         view_matrix = lookAt(cam_pos, cam_look, cam_up);
         //view_matrix = translate(view_matrix, vec3(c, c, 2.0f*c));
         y_anch = y;
