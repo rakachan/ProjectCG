@@ -259,6 +259,8 @@ class Cube {
                 glBindTexture(GL_TEXTURE_2D, texture_id_);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 33071);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 33071);
 
                 if(nb_component == 3) {
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,

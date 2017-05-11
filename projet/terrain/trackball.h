@@ -31,10 +31,10 @@ public:
       //rotation = glm::rotate(rotation, 0.1f*acos(dot(normalize(anchor_pos_), normalize(current_pos))), cross(anchor_pos_, current_pos));
       vec3 d = dir;
       vec3 axis = cross(dir, up);
-      d = glm::rotate(d,  2*1.0f * (current_pos.y - anchor_pos_.y), axis);
+      d = glm::rotate(d,  2.0f * (current_pos.y - anchor_pos_.y), axis);
       d = glm::rotateZ(d, -3.14159f * (current_pos.x - anchor_pos_.x));
       if (abs(dot(normalize(d), up))>0.95) {
-          d = glm::rotate(d, -5 *(current_pos.y - anchor_pos_.y), axis);
+          d = glm::rotate(d, -2.0f *(current_pos.y - anchor_pos_.y), axis);
       }
       anchor_pos_ = current_pos;
 
