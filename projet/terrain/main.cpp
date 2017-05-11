@@ -91,7 +91,7 @@ void Init(GLFWwindow* window) {
     bezier_points.push_back(vec3(1, -1, 1));
     bezier_points.push_back(vec3(-1, -1, 1));
 
-    camera.Init(cam_pos, cam_look, cam_up);
+    camera.Init(cam_pos, cam_look, cam_up, window_width, window_height, framebuffer.getFramebufferId());
     camera.setBezier(bezier_points);
     float ratio = window_width / (float) window_height;
     projection_matrix = perspective(45.0f, ratio, near, 10.0f);
@@ -108,6 +108,7 @@ void Display() {
     framebuffer.Clear();
     framebuffer.Bind();
         quad.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
+        camera.computeHeight();
     framebuffer.Unbind();
     reflexion.Clear();
     reflexion.Bind();
@@ -179,6 +180,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             break;
             case GLFW_KEY_RIGHT :
                 camera.setMov(RIGHT);
+            break;
+            case GLFW_KEY_O :
+                camera.setMode(FREE);
+            break;
+            case GLFW_KEY_P :
+                camera.setMode(FPS);
             break;
             default: break;
         }

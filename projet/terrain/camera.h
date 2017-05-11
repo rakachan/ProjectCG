@@ -25,19 +25,31 @@ private:
 
     float y_anch;
     Mode mode;
+    GLuint height_id;
+    int width;
+    int height;
+    float h;
 
     Bezier bezier;
     float t;
     float bezier_time = 300.0f;
 
 public:
-    void Init(vec3 pos, vec3 look, vec3 up) {
+    void Init(vec3 pos, vec3 look, vec3 up, int width, int height, GLuint height_texture_id) {
+
         cam_pos = pos;
         cam_look = look;
         cam_up = up;
         cam_dir = cam_look-cam_pos;
         mode = FREE;
+        height_id = height_texture_id;
+        this->height = height;
+        this->width = width;
+        //pixels = new GLfloat[height * width];
         setView();
+        h = 0.0;
+        //glGetTexImage(height_id, 0, GL_RED, GL_FLOAT, pixels );
+
     }
 
     void setView() {
@@ -50,6 +62,14 @@ public:
 
     void setYAnch(float y) {
         y_anch = y;
+    }
+
+    void computeHeight() {
+        if (cam_pos.x > 1 || cam_pos.x < -1 || cam_pos.y > 1 || cam_pos.y < -1) {
+            return;
+        }
+        vec2 coord = mapPixel(cam_pos);
+        glReadPixels(coord.x, coord.y, 1, 1, GL_RED, GL_FLOAT, &h);
     }
 
     void Drag(float x, float y) {
@@ -95,10 +115,30 @@ public:
         break;
         default: break;
         }
+
+    }
+
+    vec2 mapPixel(vec3 position) {
+        /*
+        if (position.x > 1 || position.x < -1 || position.y > 1 || position.y < -1) {
+            return vec2(0);
+        }
+
+        return position.x * width + position.y;
+        */
+        vec3 tmp = position + vec3(1, 1, 0);
+        return vec2(tmp.x/(2*width), tmp.y/(2*height));
+    }
+
+    void setMode(Mode m) {
+        mode = m;
+        if (mode == FPS) {
+            cam_pos = vec3(cam_pos.x, cam_pos.y, h + 0.2);
+        }
     }
 
     void setMov(Key key) {
-        if (mode==FREE) {
+        if (mode==FREE || mode == FPS) {
             switch(key) {
                 case UP:
                     mov_dir = normalize(cam_dir);
@@ -126,10 +166,6 @@ public:
     void useBezier(float t) {
         cam_pos = bezier.getPos(t);
         cam_dir = cam_look - cam_pos;
-    }
-
-    void setMode(Mode m) {
-        mode = m;
     }
 
     mat4 getView() {
