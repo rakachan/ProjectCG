@@ -9,7 +9,7 @@
 using namespace glm;
 
 enum Mode {FREE, FPS, BEZIER};
-enum Key {UP, LEFT, DOWN, RIGHT};
+enum Key {UP, LEFT, DOWN, RIGHT, O_KEY, P_KEY};
 
 class Camera {
 private:
@@ -115,6 +115,26 @@ public:
                 default: break;
             }
         }
+    }
+
+    void modifyBezierTime(Key key) {
+        float old_bezier = bezier_time;
+        switch(key) {
+        case O_KEY:
+            bezier_time += 10.0f;
+        break;
+        case P_KEY:
+            bezier_time -= 10.0f;
+        break;
+        default: break;
+        }
+        if (bezier_time<100) {
+            bezier_time = 100;
+        }
+        if (bezier_time>500) {
+            bezier_time = 500;
+        }
+        t = t/(old_bezier/bezier_time);
     }
 
     void setBezier(vector<vec3> points) {

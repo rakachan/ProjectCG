@@ -180,6 +180,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             case GLFW_KEY_RIGHT :
                 camera.setMov(RIGHT);
             break;
+            case GLFW_KEY_O :
+                camera.modifyBezierTime(O_KEY);
+            break;
+            case GLFW_KEY_P :
+                camera.modifyBezierTime(P_KEY);
+            break;
             default: break;
         }
     }
