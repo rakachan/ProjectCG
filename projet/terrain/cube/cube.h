@@ -313,7 +313,7 @@ class Cube {
             glUniform1f(glGetUniformLocation(program_id_, "time"), glfwGetTime());
 
             // setup MVP
-            model_matrix_ = glm::scale(model, glm::vec3(0.5f));
+            model_matrix_ = glm::scale(model, glm::vec3(1.0f));
             //model_matrix_ = glm::rotate(mat4(model_matrix_), glm::radians(90.0), vec3(0, 0, 0));
             glm::mat4 MVP = projection * view * model_matrix_;//view_projection * model_matrix_;
             GLuint MVP_id = glGetUniformLocation(program_id_, "MVP");

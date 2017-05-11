@@ -48,6 +48,8 @@ ScreenQuad screenquad;
 
 Trackball trackball;
 Camera camera;
+vector<vec3> bezier_points;
+float bezier_prec = 40.0f;
 
 vec3 cam_pos(0.0f, -0.5f, 1.0f);
 vec3 cam_look(0.0f, 0.0f, 0.0f);
@@ -83,7 +85,14 @@ void Init(GLFWwindow* window) {
 
     water.Init(framebuffer_texture_id, reflexion_texture_id);
 
+    bezier_points.push_back(vec3(-1, -1, 1));
+    bezier_points.push_back(vec3(-1, 1, 1));
+    bezier_points.push_back(vec3(1, 1, 1));
+    bezier_points.push_back(vec3(1, -1, 1));
+    bezier_points.push_back(vec3(-1, -1, 1));
+
     camera.Init(cam_pos, cam_look, cam_up);
+    camera.setBezier(bezier_points);
     float ratio = window_width / (float) window_height;
     projection_matrix = perspective(45.0f, ratio, near, 10.0f);
 
@@ -96,10 +105,6 @@ void Display() {
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     t = glfwGetTime();
     camera.Draw();
-    /*cam_pos=cam_pos+0.01f*mov_dir;
-    cam_look=cam_look+0.01f*mov_dir;
-    mov_dir=0.9f*mov_dir;
-    view_matrix = lookAt(cam_pos, cam_look, cam_up);*/
     framebuffer.Clear();
     framebuffer.Bind();
         quad.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
@@ -108,18 +113,18 @@ void Display() {
     reflexion.Bind();
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        sky.Draw(rotate(rotate(translate(trackball_matrix, camera.cam_pos), (3.14159f), vec3(1, 0, 0)), -(t/50.0f), camera.cam_up), camera.view_matrix, projection_matrix);
-        grid.Draw(trackball_matrix, camera.view_matrix, projection_matrix, 0, 0, 1);
+        sky.Draw(rotate(rotate(translate(trackball_matrix, camera.getPos()), (3.14159f), vec3(1, 0, 0)), -(t/50.0f), camera.getUp()), camera.getView(), projection_matrix);
+        grid.Draw(trackball_matrix, camera.getView(), projection_matrix, 0, 0, 1);
         glDepthFunc(GL_LESS);
     reflexion.Unbind();
     glViewport(0, 0, window_width, window_height);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    sky.Draw(rotate(translate(trackball_matrix, camera.cam_pos), (t/50.0f), camera.cam_up), camera.view_matrix, projection_matrix);
-    grid.Draw(trackball_matrix, camera.view_matrix, projection_matrix);
+    sky.Draw(rotate(translate(trackball_matrix, camera.getPos()), (t/50.0f), camera.getUp()), camera.getView(), projection_matrix);
+    grid.Draw(trackball_matrix, camera.getView(), projection_matrix);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, t, 0, 1);
-    water.Draw(trackball_matrix, camera.view_matrix, projection_matrix, 0);
+    water.Draw(trackball_matrix, camera.getView(), projection_matrix, 0);
 }
 
 // Gets called when the windows/framebuffer is resized.

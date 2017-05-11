@@ -3,13 +3,16 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include <glm/gtx/rotate_vector.hpp>
+#include "bezier.h"
 #define PI 3.14159
+
+using namespace glm;
 
 enum Mode {FREE, FPS, BEZIER};
 enum Key {UP, LEFT, DOWN, RIGHT};
 
 class Camera {
-public:
+private:
     vec3 cam_pos;
     vec3 cam_look;
     vec3 cam_dir;
@@ -23,6 +26,11 @@ public:
     float y_anch;
     Mode mode;
 
+    Bezier bezier;
+    float t;
+    float bezier_time = 300.0f;
+
+public:
     void Init(vec3 pos, vec3 look, vec3 up) {
         cam_pos = pos;
         cam_look = look;
@@ -45,7 +53,6 @@ public:
     }
 
     void Drag(float x, float y) {
-      if (mode==FREE) {
           vec3 current_pos = (vec3(x, y, 0.0f));
           vec3 d = cam_dir;
           vec3 axis = cross(cam_dir, cam_up);
@@ -58,22 +65,36 @@ public:
           cam_dir = d;
           cam_look = cam_pos + cam_dir;
           setView();
-      }
     }
 
     void zoom(float y) {
-        float c = (y-y_anch)/50.0f;
-        cam_pos = cam_pos+vec3(c, c, c);
-        cam_dir = cam_look - cam_pos;
-        setView();
-        y_anch = y;
+        if (mode!=BEZIER) {
+            float c = (y-y_anch)/50.0f;
+            cam_pos = cam_pos+vec3(c, c, c);
+            cam_dir = cam_look - cam_pos;
+            setView();
+            y_anch = y;
+        }
     }
 
     void Draw() {
-        cam_pos=cam_pos+0.01f*mov_dir;
-        cam_look=cam_look+0.01f*mov_dir;
-        mov_dir=0.9f*mov_dir;
-        setView();
+        switch(mode) {
+        case FREE:
+            cam_pos=cam_pos+0.01f*mov_dir;
+            cam_look=cam_look+0.01f*mov_dir;
+            mov_dir=0.9f*mov_dir;
+            setView();
+        break;
+        case BEZIER:
+            useBezier(t/bezier_time);
+            setView();
+            t+=1;
+            if ((t>=bezier_time)) {
+                t=0.0f;
+            }
+        break;
+        default: break;
+        }
     }
 
     void setMov(Key key) {
@@ -94,6 +115,37 @@ public:
                 default: break;
             }
         }
+    }
+
+    void setBezier(vector<vec3> points) {
+        bezier.Init(points);
+        t = 0;
+        mode = BEZIER;
+    }
+
+    void useBezier(float t) {
+        cam_pos = bezier.getPos(t);
+        cam_dir = cam_look - cam_pos;
+    }
+
+    void setMode(Mode m) {
+        mode = m;
+    }
+
+    mat4 getView() {
+        return view_matrix;
+    }
+
+    vec3 getPos() {
+        return cam_pos;
+    }
+
+    vec3 getLook() {
+        return cam_look;
+    }
+
+    vec3 getUp() {
+        return cam_up;
     }
 };
 
