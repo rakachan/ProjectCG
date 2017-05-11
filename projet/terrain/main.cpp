@@ -94,7 +94,7 @@ void Init(GLFWwindow* window) {
 void Display() {
     //glViewport(0,0,window_width,window_height);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    t = 0.0f;// glfwGetTime();
+    t = glfwGetTime();
     camera.Draw();
     /*cam_pos=cam_pos+0.01f*mov_dir;
     cam_look=cam_look+0.01f*mov_dir;
@@ -108,18 +108,18 @@ void Display() {
     reflexion.Bind();
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        sky.Draw(rotate(trackball_matrix, (3.14159f), vec3(1, 0, 0)), camera.view_matrix, projection_matrix);
-        grid.Draw(trackball_matrix, camera.view_matrix, projection_matrix, t, 0, 1);
+        sky.Draw(rotate(rotate(translate(trackball_matrix, camera.cam_pos), (3.14159f), vec3(1, 0, 0)), -(t/50.0f), camera.cam_up), camera.view_matrix, projection_matrix);
+        grid.Draw(trackball_matrix, camera.view_matrix, projection_matrix, 0, 0, 1);
         glDepthFunc(GL_LESS);
     reflexion.Unbind();
     glViewport(0, 0, window_width, window_height);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    sky.Draw(translate(trackball_matrix, cam_pos), camera.view_matrix, projection_matrix);
+    sky.Draw(rotate(translate(trackball_matrix, camera.cam_pos), (t/50.0f), camera.cam_up), camera.view_matrix, projection_matrix);
     grid.Draw(trackball_matrix, camera.view_matrix, projection_matrix);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, t, 0, 1);
-    water.Draw(trackball_matrix, camera.view_matrix, projection_matrix, t);
+    water.Draw(trackball_matrix, camera.view_matrix, projection_matrix, 0);
 }
 
 // Gets called when the windows/framebuffer is resized.
