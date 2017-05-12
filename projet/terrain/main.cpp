@@ -91,7 +91,7 @@ void Init(GLFWwindow* window) {
     bezier_points.push_back(vec3(1, -1, 1));
     bezier_points.push_back(vec3(-1, -1, 1));
 
-    camera.Init(cam_pos, cam_look, cam_up, window_width, window_height, framebuffer.getFramebufferId());
+    camera.Init(cam_pos, cam_look, cam_up, window_width, window_height, framebuffer_texture_id);
     camera.setBezier(bezier_points);
     float ratio = window_width / (float) window_height;
     projection_matrix = perspective(45.0f, ratio, near, 10.0f);
@@ -104,12 +104,14 @@ void Display() {
     //glViewport(0,0,window_width,window_height);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     t = glfwGetTime();
-    camera.Draw();
+
     framebuffer.Clear();
     framebuffer.Bind();
         quad.Draw(IDENTITY_MATRIX, IDENTITY_MATRIX, IDENTITY_MATRIX);
         camera.computeHeight();
     framebuffer.Unbind();
+
+    camera.Draw();
     reflexion.Clear();
     reflexion.Bind();
         glEnable(GL_DEPTH_TEST);
@@ -181,11 +183,20 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             case GLFW_KEY_RIGHT :
                 camera.setMov(RIGHT);
             break;
-            case GLFW_KEY_O :
+            case GLFW_KEY_B :
+                camera.setMode(BEZIER);
+            break;
+            case GLFW_KEY_M :
                 camera.setMode(FREE);
             break;
-            case GLFW_KEY_P :
+            case GLFW_KEY_N :
                 camera.setMode(FPS);
+            break;
+            case GLFW_KEY_O:
+                camera.modifyBezierTime(O_KEY);
+            break;
+            case GLFW_KEY_P :
+                camera.modifyBezierTime(P_KEY);
             break;
             default: break;
         }

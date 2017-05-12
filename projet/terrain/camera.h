@@ -9,7 +9,7 @@
 using namespace glm;
 
 enum Mode {FREE, FPS, BEZIER};
-enum Key {UP, LEFT, DOWN, RIGHT};
+enum Key {UP, LEFT, DOWN, RIGHT, O_KEY, P_KEY};
 
 class Camera {
 private:
@@ -28,7 +28,7 @@ private:
     GLuint height_id;
     int width;
     int height;
-    float h;
+    vec3 h;
 
     Bezier bezier;
     float t;
@@ -45,10 +45,8 @@ public:
         height_id = height_texture_id;
         this->height = height;
         this->width = width;
-        //pixels = new GLfloat[height * width];
         setView();
-        h = 0.0;
-        //glGetTexImage(height_id, 0, GL_RED, GL_FLOAT, pixels );
+        h = vec3(0.0);
 
     }
 
@@ -65,11 +63,13 @@ public:
     }
 
     void computeHeight() {
+        /*
         if (cam_pos.x > 1 || cam_pos.x < -1 || cam_pos.y > 1 || cam_pos.y < -1) {
-            return;
-        }
+            h = 0.0;
+        }*/
         vec2 coord = mapPixel(cam_pos);
-        glReadPixels(coord.x, coord.y, 1, 1, GL_RED, GL_FLOAT, &h);
+        glReadBuffer(height_id);
+        glReadPixels(coord.x, coord.y, 1, 1, GL_RGB, GL_UNSIGNED_INT, &h);
     }
 
     void Drag(float x, float y) {
@@ -99,6 +99,7 @@ public:
 
     void Draw() {
         switch(mode) {
+        case FPS:
         case FREE:
             cam_pos=cam_pos+0.01f*mov_dir;
             cam_look=cam_look+0.01f*mov_dir;
@@ -133,7 +134,7 @@ public:
     void setMode(Mode m) {
         mode = m;
         if (mode == FPS) {
-            cam_pos = vec3(cam_pos.x, cam_pos.y, h + 0.2);
+            cam_pos = vec3(cam_pos.x, cam_pos.y, 2*h.z + 0.2);
         }
     }
 
@@ -155,6 +156,26 @@ public:
                 default: break;
             }
         }
+    }
+
+    void modifyBezierTime(Key key) {
+        float old_bezier = bezier_time;
+        switch(key) {
+        case O_KEY:
+            bezier_time += 10.0f;
+        break;
+        case P_KEY:
+            bezier_time -= 10.0f;
+        break;
+        default: break;
+        }
+        if (bezier_time<100) {
+            bezier_time = 100;
+        }
+        if (bezier_time>500) {
+            bezier_time = 500;
+        }
+        t = t/(old_bezier/bezier_time);
     }
 
     void setBezier(vector<vec3> points) {
