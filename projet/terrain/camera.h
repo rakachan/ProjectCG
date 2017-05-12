@@ -28,7 +28,7 @@ private:
     GLuint height_id;
     int width;
     int height;
-    vec3 h;
+    float h;
 
     Bezier bezier;
     float t;
@@ -46,7 +46,7 @@ public:
         this->height = height;
         this->width = width;
         setView();
-        h = vec3(0.0);
+        h = 0.0;
 
     }
 
@@ -63,13 +63,14 @@ public:
     }
 
     void computeHeight() {
-        /*
+
         if (cam_pos.x > 1 || cam_pos.x < -1 || cam_pos.y > 1 || cam_pos.y < -1) {
-            h = 0.0;
-        }*/
+            h = -0.3;
+        }
         vec2 coord = mapPixel(cam_pos);
-        glReadBuffer(height_id);
-        glReadPixels(coord.x, coord.y, 1, 1, GL_RGB, GL_UNSIGNED_INT, &h);
+        glReadPixels(coord.x, coord.y, 1, 1, GL_RED, GL_FLOAT, &h);
+        glGetError();
+
     }
 
     void Drag(float x, float y) {
@@ -100,6 +101,12 @@ public:
     void Draw() {
         switch(mode) {
         case FPS:
+            cam_pos=cam_pos+0.01f*mov_dir;
+            cam_look=cam_look+0.01f*mov_dir;
+            mov_dir=0.9f*mov_dir;
+            setCamToHeight(cam_pos.x, cam_pos.y);
+            setView();
+            break;
         case FREE:
             cam_pos=cam_pos+0.01f*mov_dir;
             cam_look=cam_look+0.01f*mov_dir;
@@ -120,26 +127,28 @@ public:
     }
 
     vec2 mapPixel(vec3 position) {
-        /*
+
         if (position.x > 1 || position.x < -1 || position.y > 1 || position.y < -1) {
             return vec2(0);
         }
 
-        return position.x * width + position.y;
-        */
         vec3 tmp = position + vec3(1, 1, 0);
-        return vec2(tmp.x/(2*width), tmp.y/(2*height));
+        return vec2(tmp.x/2.0* width, tmp.y/2.0 * height);
     }
 
     void setMode(Mode m) {
         mode = m;
         if (mode == FPS) {
-            cam_pos = vec3(cam_pos.x, cam_pos.y, 2*h.z + 0.2);
+            setCamToHeight(cam_pos.x, cam_pos.y);
         }
     }
 
+    void setCamToHeight(float x, float y) {
+        cam_pos = vec3(x, y, h + 0.3);
+    }
+
     void setMov(Key key) {
-        if (mode==FREE || mode == FPS) {
+        if (mode==FREE || mode==FPS) {
             switch(key) {
                 case UP:
                     mov_dir = normalize(cam_dir);

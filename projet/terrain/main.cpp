@@ -120,6 +120,7 @@ void Display() {
         grid.Draw(trackball_matrix, camera.getView(), projection_matrix, 0, 0, 1);
         glDepthFunc(GL_LESS);
     reflexion.Unbind();
+
     glViewport(0, 0, window_width, window_height);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
