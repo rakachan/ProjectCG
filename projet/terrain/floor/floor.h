@@ -1,15 +1,16 @@
 #pragma once
 #include "icg_helper.h"
 #include "glm/gtc/type_ptr.hpp"
+#include <glm/gtx/rotate_vector.hpp>
+
 struct Light {
         glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
-
-        glm::vec3 light_pos = glm::vec3(-2.0f, 2.0f, 2.0f);
+        glm::vec3 light_pos = glm::vec3(0.0f, 0.0f, 2.0f);
 
         // pass light properties to the shader
-        void Setup(GLuint program_id) {
+        void Setup(GLuint program_id, float time) {
             glUseProgram(program_id);
 
             // given in camera space
@@ -18,8 +19,8 @@ struct Light {
             GLuint La_id = glGetUniformLocation(program_id, "La");
             GLuint Ld_id = glGetUniformLocation(program_id, "Ld");
             GLuint Ls_id = glGetUniformLocation(program_id, "Ls");
-
-            glUniform3fv(light_pos_id, ONE, glm::value_ptr(light_pos));
+            glm::vec3 newpos = rotate(light_pos, time, glm::vec3(0, 0, 1));
+            glUniform3fv(light_pos_id, ONE, glm::value_ptr(newpos));
             glUniform3fv(La_id, ONE, glm::value_ptr(La));
             glUniform3fv(Ld_id, ONE, glm::value_ptr(Ld));
             glUniform3fv(Ls_id, ONE, glm::value_ptr(Ls));
@@ -28,9 +29,9 @@ struct Light {
 
 struct Water {
         glm::vec3 ka = glm::vec3(0.0f, 0.0f, 0.1f);
-        glm::vec3 kd = glm::vec3(0.0f, 0.0f, 0.9f);
-        glm::vec3 ks = glm::vec3(0.0f, 0.0f, 0.8f);
-        float alpha = 3.0f;
+        glm::vec3 kd = glm::vec3(0.1f, 0.1f, 0.5f);
+        glm::vec3 ks = glm::vec3(0.7f, 0.7f, 0.7f);
+        float alpha = 64.0f;
 
         // pass material properties to the shaders
         void Setup(GLuint program_id) {
@@ -57,6 +58,7 @@ class Floor: public Water, public Light {
         GLuint vertex_normal_buffer_object_;
         GLuint texture_id_;
         GLuint reflexion_id_;
+        GLuint normalmap_id_;
         GLuint num_indices_;                    // number of vertices to render
         GLuint MVP_id_;                         // model, view, proj matrix ID
         GLuint M_id_;                         // model, view, proj matrix ID
@@ -77,6 +79,8 @@ class Floor: public Water, public Light {
             // vertex one vertex array
             glGenVertexArrays(1, &vertex_array_id_);
             glBindVertexArray(vertex_array_id_);
+
+            loadImage("normalmap.jpg", "normalmap", 3, normalmap_id_);
 
             // vertex coordinates and indices
             {
@@ -167,7 +171,8 @@ class Floor: public Water, public Light {
         void Draw(const glm::mat4 &model = IDENTITY_MATRIX,
                   const glm::mat4 &view = IDENTITY_MATRIX,
                   const glm::mat4 &projection = IDENTITY_MATRIX,
-                  float time = 0) {
+                  float time = 0,
+                  vec3 cam_pos = glm::vec3(0, 0, 1)) {
             glUseProgram(program_id_);
             glBindVertexArray(vertex_array_id_);
 
@@ -179,13 +184,16 @@ class Floor: public Water, public Light {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             Water::Setup(program_id_);
-            Light::Setup(program_id_);
+            Light::Setup(program_id_, time);
 
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, texture_id_);
 
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, reflexion_id_);
+
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, normalmap_id_);
 
             // setup MVP
             glm::mat4 MVP = projection*view*model;
@@ -194,6 +202,8 @@ class Floor: public Water, public Light {
             glUniformMatrix4fv(M_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(model));
             glUniformMatrix4fv(V_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(view));
             glUniformMatrix4fv(P_id_, ONE, DONT_TRANSPOSE, glm::value_ptr(projection));
+
+            glUniform3fv(glGetUniformLocation(program_id_, "cam_pos"), ONE, glm::value_ptr(cam_pos));
 
             // setup MVP
             //GLuint MVP_id = glGetUniformLocation(program_id_, "MVP");
@@ -208,5 +218,48 @@ class Floor: public Water, public Light {
             glBindVertexArray(0);
             glUseProgram(0);
             glDisable(GL_BLEND);
+        }
+
+        void loadImage(string filename, string uniformName, int textureNb, GLuint& id) {
+            // load texture
+            {
+                int width;
+                int height;
+                int nb_component;
+                // set stb_image to have the same coordinates as OpenGL
+                stbi_set_flip_vertically_on_load(1);
+                unsigned char* image = stbi_load(filename.c_str(), &width,
+                &height, &nb_component, 0);
+
+                if(image == nullptr) {
+                    throw(string("Failed to load texture " + filename));
+                }
+
+                glGenTextures(1, &id);
+                glBindTexture(GL_TEXTURE_2D, id);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, -1);
+
+                if(nb_component == 3) {
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+                    GL_RGB, GL_UNSIGNED_BYTE, image);
+                } else if(nb_component == 4) {
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                    GL_RGBA, GL_UNSIGNED_BYTE, image);
+                }
+
+                glGenerateMipmap(GL_TEXTURE_2D);
+
+                GLuint tex_id = glGetUniformLocation(program_id_, uniformName.c_str());
+                glUniform1i(tex_id, textureNb);
+
+                // cleanup
+                glBindTexture(GL_TEXTURE_2D, 0);
+                stbi_image_free(image);
+            }
         }
 };

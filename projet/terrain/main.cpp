@@ -15,6 +15,8 @@
 #include "screenquad/screenquad.h"
 #include "quad/quad.h"
 
+#define MODE FREE
+
 #define PI 3.14159
 
 
@@ -45,13 +47,14 @@ Cube sky;
 Grid grid;
 Quad quad;
 ScreenQuad screenquad;
+Mode mode = MODE;
 
 Trackball trackball;
 Camera camera;
 vector<vec3> bezier_points;
 float bezier_prec = 40.0f;
 
-vec3 cam_pos(0.0f, -0.5f, 1.0f);
+vec3 cam_pos(-0.75f, -0.75f, 0.5f);
 vec3 cam_look(0.0f, 0.0f, 0.0f);
 vec3 cam_up(0.0f, 0.0f, 1.0f);
 vec3 oldcam_dir = cam_look - cam_pos;
@@ -96,7 +99,7 @@ void Init(GLFWwindow* window) {
     float ratio = window_width / (float) window_height;
     projection_matrix = perspective(45.0f, ratio, near, 10.0f);
 
-
+    camera.setMode(mode);
     mirror_view = lookAt(cam_refl, cam_look, cam_up);
 }
 
@@ -113,8 +116,8 @@ void Display() {
     reflexion.Bind();
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        sky.Draw(rotate(rotate(translate(trackball_matrix, camera.getPos()), (3.14159f), vec3(1, 0, 0)), -(t/50.0f), camera.getUp()), camera.getView(), projection_matrix);
-        grid.Draw(trackball_matrix, camera.getView(), projection_matrix, 0, 0, 1);
+        sky.Draw(rotate(scale(translate(trackball_matrix, camera.getPos()), vec3(1, 1, -1)), (t/50.0f), camera.getUp()), camera.getView(), projection_matrix);
+        grid.Draw(trackball_matrix, camera.getView(), projection_matrix, t, 0, 1);
         glDepthFunc(GL_LESS);
     reflexion.Unbind();
     glViewport(0, 0, window_width, window_height);
@@ -122,9 +125,9 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     sky.Draw(rotate(translate(trackball_matrix, camera.getPos()), (t/50.0f), camera.getUp()), camera.getView(), projection_matrix);
-    grid.Draw(trackball_matrix, camera.getView(), projection_matrix);
+    grid.Draw(trackball_matrix, camera.getView(), projection_matrix, t);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, t, 0, 1);
-    water.Draw(trackball_matrix, camera.getView(), projection_matrix, 0);
+    water.Draw(trackball_matrix, camera.getView(), projection_matrix, t, camera.getPos());
 }
 
 // Gets called when the windows/framebuffer is resized.
@@ -186,7 +189,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             case GLFW_KEY_P :
                 camera.modifyBezierTime(P_KEY);
             break;
-            default: break;
+            default: printf("%d %d", camera.getPos().x, camera.getPos().y);break;
         }
     }
       if (action == GLFW_REPEAT) {

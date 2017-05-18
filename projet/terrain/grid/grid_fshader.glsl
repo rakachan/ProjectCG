@@ -28,7 +28,7 @@ void main() {
 
     if ((draw==0)) {
         float height_modif = 0.02*(sin(time)*sin(time+uv.x*20)*sin(time+uv.y*20));
-        if (height-abs(height_modif)>0) {
+        if (height>0) {
             discard;
         }
     }

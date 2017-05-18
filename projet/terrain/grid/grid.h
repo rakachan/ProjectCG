@@ -248,7 +248,7 @@ class Grid: public Material, public Light  {
             glBindTexture(GL_TEXTURE_1D, colormap_);
 
             Material::Setup(program_id_);
-            Light::Setup(program_id_);
+            Light::Setup(program_id_, time/50.0F);
 
             // setup MVP
             //glm::mat4 MVP = projection*view*model;
