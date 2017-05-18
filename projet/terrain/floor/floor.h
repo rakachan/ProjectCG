@@ -7,7 +7,7 @@ struct Light {
         glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 light_pos = glm::vec3(0.0f, 0.0f, 2.0f);
+        glm::vec3 light_pos = glm::vec3(1.0f, 1.0f, 2.0f);
 
         // pass light properties to the shader
         void Setup(GLuint program_id, float time) {
@@ -19,7 +19,7 @@ struct Light {
             GLuint La_id = glGetUniformLocation(program_id, "La");
             GLuint Ld_id = glGetUniformLocation(program_id, "Ld");
             GLuint Ls_id = glGetUniformLocation(program_id, "Ls");
-            glm::vec3 newpos = rotate(light_pos, time, glm::vec3(0, 0, 1));
+            glm::vec3 newpos = rotate(light_pos, time/(2.0f), glm::vec3(0, 0, 1));
             glUniform3fv(light_pos_id, ONE, glm::value_ptr(newpos));
             glUniform3fv(La_id, ONE, glm::value_ptr(La));
             glUniform3fv(Ld_id, ONE, glm::value_ptr(Ld));

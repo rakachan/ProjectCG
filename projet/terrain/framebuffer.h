@@ -80,6 +80,10 @@ class FrameBuffer {
             return color_texture_id_;
         }
 
+        GLuint getFramebufferId() {
+            return framebuffer_object_id_;
+        }
+
         void Cleanup() {
             glDeleteTextures(1, &color_texture_id_);
             glDeleteRenderbuffers(1, &depth_render_buffer_id_);

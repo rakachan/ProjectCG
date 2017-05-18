@@ -25,19 +25,29 @@ private:
 
     float y_anch;
     Mode mode;
+    GLuint height_id;
+    int width;
+    int height;
+    float h;
 
     Bezier bezier;
     float t;
     float bezier_time = 300.0f;
 
 public:
-    void Init(vec3 pos, vec3 look, vec3 up) {
+    void Init(vec3 pos, vec3 look, vec3 up, int width, int height, GLuint height_texture_id) {
+
         cam_pos = pos;
         cam_look = look;
         cam_up = up;
         cam_dir = cam_look-cam_pos;
         mode = FREE;
+        height_id = height_texture_id;
+        this->height = height;
+        this->width = width;
         setView();
+        h = 0.0;
+
     }
 
     void setView() {
@@ -50,6 +60,17 @@ public:
 
     void setYAnch(float y) {
         y_anch = y;
+    }
+
+    void computeHeight() {
+
+        if (cam_pos.x > 1 || cam_pos.x < -1 || cam_pos.y > 1 || cam_pos.y < -1) {
+            h = -0.3;
+        }
+        vec2 coord = mapPixel(cam_pos);
+        glReadPixels(coord.x, coord.y, 1, 1, GL_RED, GL_FLOAT, &h);
+        glGetError();
+
     }
 
     void Drag(float x, float y) {
@@ -79,6 +100,14 @@ public:
 
     void Draw() {
         switch(mode) {
+        case FPS:
+            cam_pos=clamp(cam_pos+0.01f*mov_dir, vec3(-0.99f, -0.99f, -1.0f), vec3(0.99f, 0.99f, 1.0f));
+            cam_look = cam_pos + cam_dir;
+            //cam_look=cam_look+0.01f*mov_dir;
+            mov_dir=0.9f*mov_dir;
+            setCamToHeight(cam_pos.x, cam_pos.y);
+            setView();
+            break;
         case FREE:
             cam_pos=cam_pos+0.01f*mov_dir;
             cam_look=cam_look+0.01f*mov_dir;
@@ -95,10 +124,32 @@ public:
         break;
         default: break;
         }
+
+    }
+
+    vec2 mapPixel(vec3 position) {
+
+        if (position.x > 1 || position.x < -1 || position.y > 1 || position.y < -1) {
+            return vec2(0);
+        }
+
+        vec3 tmp = position + vec3(1, 1, 0);
+        return vec2(tmp.x/2.0* width, tmp.y/2.0 * height);
+    }
+
+    void setMode(Mode m) {
+        mode = m;
+        if (mode == FPS) {
+            setCamToHeight(cam_pos.x, cam_pos.y);
+        }
+    }
+
+    void setCamToHeight(float x, float y) {
+        cam_pos = vec3(x, y, h + 0.3);
     }
 
     void setMov(Key key) {
-        if (mode==FREE) {
+        if (mode==FREE || mode==FPS) {
             switch(key) {
                 case UP:
                     mov_dir = normalize(cam_dir);
@@ -146,10 +197,6 @@ public:
     void useBezier(float t) {
         cam_pos = bezier.getPos(t);
         cam_dir = cam_look - cam_pos;
-    }
-
-    void setMode(Mode m) {
-        mode = m;
     }
 
     mat4 getView() {
