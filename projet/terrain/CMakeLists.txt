@@ -7,6 +7,7 @@ file(GLOB TEXTURES
     floor/normalmap.jpg
     cube/skybox.tga
     cube/skybox2.tga
+    cube/skybox3.jpg
     grid/snow.tga
     grid/rock.tga
     grid/sand.tga

@@ -2,12 +2,13 @@
 #include "icg_helper.h"
 #include "glm/gtc/type_ptr.hpp"
 #include <glm/gtx/rotate_vector.hpp>
+#include "SOIL.h"
 
 struct Light {
         glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 Ls = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 light_pos = glm::vec3(1.0f, 1.0f, 2.0f);
+        glm::vec3 light_pos = glm::vec3(0.5f, 0.5f, 2.0f);
 
         // pass light properties to the shader
         void Setup(GLuint program_id, float time) {
@@ -19,7 +20,7 @@ struct Light {
             GLuint La_id = glGetUniformLocation(program_id, "La");
             GLuint Ld_id = glGetUniformLocation(program_id, "Ld");
             GLuint Ls_id = glGetUniformLocation(program_id, "Ls");
-            glm::vec3 newpos = rotate(light_pos, time/(2.0f), glm::vec3(0, 0, 1));
+            glm::vec3 newpos = rotate(light_pos, time/(3.0f), glm::vec3(0, 0, 1));
             glUniform3fv(light_pos_id, ONE, glm::value_ptr(newpos));
             glUniform3fv(La_id, ONE, glm::value_ptr(La));
             glUniform3fv(Ld_id, ONE, glm::value_ptr(Ld));
@@ -174,7 +175,7 @@ class Floor: public Water, public Light {
                   float time = 0,
                   vec3 cam_pos = glm::vec3(0, 0, 1)) {
             glUseProgram(program_id_);
-            glBindVertexArray(vertex_array_id_);
+            //glBindVertexArray(vertex_array_id_);
 
 
             glActiveTexture(GL_TEXTURE2);
@@ -185,6 +186,8 @@ class Floor: public Water, public Light {
 
             Water::Setup(program_id_);
             Light::Setup(program_id_, time);
+
+            glBindVertexArray(vertex_array_id_);
 
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, texture_id_);

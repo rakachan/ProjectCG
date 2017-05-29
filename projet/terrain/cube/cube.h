@@ -143,11 +143,11 @@ static const glm::vec2 CubeUVs[] =
 
     //behind
     glm::vec2(0.25, 0.666),
-    glm::vec2(0.25, 1),
+    glm::vec2(0.25, 1.0),
     glm::vec2(0.5, 0.666),
-    glm::vec2(0.25, 1),
+    glm::vec2(0.25, 1.0),
     glm::vec2(0.5, 0.666),
-    glm::vec2(0.5, 1),
+    glm::vec2(0.5, 1.0),
     //right
     glm::vec2(0.75, 0.333),
     glm::vec2(0.5, 0.333),
@@ -179,11 +179,11 @@ static const glm::vec2 CubeUVs[] =
 
     //top
     glm::vec2(0.75, 0.666),
-    glm::vec2(1, 0.666),
+    glm::vec2(1.0, 0.666),
     glm::vec2(0.75, 0.333),
-    glm::vec2(1, 0.666),
+    glm::vec2(1.0, 0.666),
     glm::vec2(0.75, 0.333),
-    glm::vec2(1, 0.333)
+    glm::vec2(1.0, 0.333)
 };
 
 class Cube {
@@ -250,7 +250,6 @@ class Cube {
                 stbi_set_flip_vertically_on_load(0);
                 unsigned char* image = stbi_load(texture_filename.c_str(),
                                                  &width, &height, &nb_component, 0);
-
                 if(image == nullptr) {
                     throw(std::string("Failed to load texture"));
                 }
@@ -259,8 +258,10 @@ class Cube {
                 glBindTexture(GL_TEXTURE_2D, texture_id_);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 33071);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 33071);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
 
                 if(nb_component == 3) {
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,

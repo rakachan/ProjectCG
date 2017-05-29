@@ -54,7 +54,7 @@ Camera camera;
 vector<vec3> bezier_points;
 float bezier_prec = 40.0f;
 
-vec3 cam_pos(-0.75f, -0.75f, 0.5f);
+vec3 cam_pos(0.5f, 0.3f, 1.0f);
 vec3 cam_look(0.0f, 0.0f, 0.0f);
 vec3 cam_up(0.0f, 0.0f, 1.0f);
 vec3 oldcam_dir = cam_look - cam_pos;
