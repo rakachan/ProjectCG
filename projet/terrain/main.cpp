@@ -129,7 +129,9 @@ void Display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     sky.Draw(rotate(translate(trackball_matrix, camera.getPos()), (t/50.0f), camera.getUp()), camera.getView(), projection_matrix);
+    glEnable(GL_CULL_FACE);
     grid.Draw(trackball_matrix, camera.getView(), projection_matrix, t);
+    glDisable(GL_CULL_FACE);
     //grid.Draw(trackball_matrix, view_matrix, projection_matrix, t, 0, 1);
     water.Draw(trackball_matrix, camera.getView(), projection_matrix, t, camera.getPos());
 }

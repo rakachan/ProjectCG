@@ -2,7 +2,6 @@
 #include "icg_helper.h"
 #include "glm/gtc/type_ptr.hpp"
 #include <glm/gtx/rotate_vector.hpp>
-#include "SOIL.h"
 
 struct Light {
         glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
